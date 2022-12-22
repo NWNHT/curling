@@ -1,0 +1,55 @@
+2022-12-21 06:08:03,103 - INFO - Connecting to database. - __main__.utils.DBConn
+2022-12-21 06:08:03,105 - INFO - Dropping all tables. - __main__.utils.DBConn
+2022-12-21 06:08:03,106 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:08:03,107 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:09:56,854 - INFO - Connecting to database. - __main__.utils.DBConn
+2022-12-21 06:09:56,856 - INFO - Dropping all tables. - __main__.utils.DBConn
+2022-12-21 06:09:56,858 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:09:56,858 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:11:36,867 - INFO - Connecting to database. - __main__.utils.DBConn
+2022-12-21 06:11:36,867 - INFO - Dropping all tables. - __main__.utils.DBConn
+2022-12-21 06:11:36,868 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:11:36,868 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:12:55,409 - INFO - Connecting to database. - __main__.utils.DBConn
+2022-12-21 06:12:55,410 - INFO - Dropping all tables. - __main__.utils.DBConn
+2022-12-21 06:12:55,414 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:12:55,414 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:13:30,216 - INFO - Connecting to database. - __main__.utils.DBConn
+2022-12-21 06:13:30,216 - INFO - Dropping all tables. - __main__.utils.DBConn
+2022-12-21 06:13:30,218 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:13:30,218 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:13:55,320 - INFO - No existing database, creating database. - __main__.utils.DBConn
+2022-12-21 06:13:55,320 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:13:55,324 - CRITICAL - Error creating database: near "end_id": syntax error - __main__.utils.DBConn
+2022-12-21 06:14:44,009 - INFO - Connecting to database. - __main__.utils.DBConn
+2022-12-21 06:14:44,009 - INFO - Dropping all tables. - __main__.utils.DBConn
+2022-12-21 06:14:44,012 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:14:44,012 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:15:00,624 - INFO - Connecting to database. - __main__.utils.DBConn
+2022-12-21 06:15:00,624 - INFO - Dropping all tables. - __main__.utils.DBConn
+2022-12-21 06:15:00,627 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:15:00,627 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:16:45,358 - INFO - Connecting to database. - __main__.utils.DBConn
+2022-12-21 06:16:45,359 - INFO - Dropping all tables. - __main__.utils.DBConn
+2022-12-21 06:16:45,362 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:16:45,362 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:16:45,365 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:16:50,259 - INFO - Connecting to database. - __main__.utils.DBConn
+2022-12-21 06:16:50,259 - INFO - Dropping all tables. - __main__.utils.DBConn
+2022-12-21 06:16:50,261 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:16:50,261 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:16:50,264 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:16:56,326 - INFO - No existing database, creating database. - __main__.utils.DBConn
+2022-12-21 06:16:56,326 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:16:56,330 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:16:56,330 - INFO - Dropping all tables. - __main__.utils.DBConn
+2022-12-21 06:16:56,332 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:16:56,332 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:16:56,334 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:18:54,946 - INFO - No existing database, creating database. - __main__.utils.DBConn
+2022-12-21 06:18:54,946 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:18:54,949 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:18:54,949 - INFO - Dropping all tables. - __main__.utils.DBConn
+2022-12-21 06:18:54,951 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-21 06:18:54,951 - INFO - Creating all tables. - __main__.utils.DBConn
+2022-12-21 06:18:54,953 - DEBUG - Committing to database. - __main__.utils.DBConn

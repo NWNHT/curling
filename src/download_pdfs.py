@@ -11,6 +11,8 @@ from tqdm import tqdm
 # The base url for the data
 base_url = "http://odf2.worldcurling.co"
 
+base_directory = str(Path(__file__).parent.parent.resolve())
+
 def create_shots_file():
     """Read all tournaments in the base url and create a file containing all shot_by_shot files
     """
@@ -60,7 +62,7 @@ def create_shots_file():
                 sleep(0.5)
 
     # Write the list to a file
-    with open('all_shots.txt', 'w') as fh:
+    with open(join(base_directory, 'all_shots.txt'), 'w') as fh:
         fh.write('\n'.join(all_shots))
 
 
@@ -68,15 +70,14 @@ def download_shots():
 
     # Read all_shots file for all shot by shot files
     try:
-        with open('all_shots.txt', 'r') as fh:
+        with open(join(base_directory, 'all_shots.txt'), 'r') as fh:
             all_shots = [x.strip() for x in fh.readlines()]
     except Exception as e:
         print(f"Cannot open shots file with exception: {e}")
     
     # Make data directory if does not exist
-    pwd = str(Path(__file__).parent.resolve())
-    if not isdir(join(pwd, 'shots')):
-        mkdir(join(pwd, 'shots'))
+    if not isdir(join(base_directory, 'shots')):
+        mkdir(join(base_directory, 'shots'))
     
     # For each filename, check if already downloaded and download if not
     for shot in tqdm(all_shots):
@@ -84,7 +85,7 @@ def download_shots():
         filename = f"{fc[2]}-{fc[3]}-{fc[4]}-{fc[5].split('_')[-1]}"
 
         # Skip if the file has already been downloaded
-        if isfile(join(pwd, 'shots', filename)):
+        if isfile(join(base_directory, 'shots', filename)):
             print(f"File {filename} already present.")
             continue
         print(f"Downloading {filename}")
@@ -94,7 +95,7 @@ def download_shots():
             summary = req.get(base_url + shot)
 
             # Write the file
-            with open(join(pwd, 'shots', filename), 'wb') as fh:
+            with open(join(base_directory, 'shots', filename), 'wb') as fh:
                 fh.write(summary.content)
         except Exception as e:
             print(f"Error downloading file {filename}, with exception : {e}")
