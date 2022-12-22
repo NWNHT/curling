@@ -50,47 +50,67 @@ def main():
     # db.create_tables()
 
 
-    # tournaments = {x.split('-')[0]: x for x in listdir(join(base_directory, 'shots'))}
+    # tournaments = {x.split('-')[0]: x for x in listdir(join(base_directory, 'shots_xml'))}
 
     # for k, v in tournaments.items():
-    #     print(k, v)
+    #     cmd = f"cp {join(base_directory, 'shots_xml', v)} {join(base_directory, 'src', 'sample_xmls')}".replace(r"'", r"\'")
+    #     system(cmd)
     
-    xmls = [x for x in listdir(join(base_directory, 'src')) if x.endswith('.xml')]
+    # for fil in listdir(join(base_directory, 'src', 'sample_xmls')):
+    #     remove_spans(fil)
+        # print(fil)
+        
+    
+    xmls = [x for x in listdir(join(base_directory, 'src', 'sample_xmls')) if x.endswith('.xml')]
 
+    # This will be wrapped in a loop for each tournament
+    
     # tree = et.parse(xmls[0])
     # tree = et.parse(xmls[1])
     # root = tree.getroot()
+
+    # Shot Buffers
+    shot_buffers = {'left': 20, 'right': 115, 'up': 240, 'down': 13}
+    date_box = {'left': 0, 'right': 360, 'top': 80, 'bottom': 210}
+    headers_box = {'top': 0, 'bottom': 80}
+    sheet_pattern = re.compile(f'.*Sheet ([a-zA-Z0-9])')
+
     shots = []
-    left_buf = 20
-    right_buf = 115 # orig 94
-    up_buf = 240 # orig 234
-    down_buf = 13
+
     for doc in xmls:
-        root = et.parse(doc).getroot()
+        root = et.parse(join(base_directory, 'src', 'sample_xmls', doc)).getroot()
+        print(doc)
 
         # TODO: This is where I can find the tournament and session information        
-        
-        
+        start_time = ''
+        date = ''
+        sheet = ''
+        title = ''
+        header_parse = []
 
         for page in root:
             page_num = int(page.attrib['number'])
-            print(page.tag, page.attrib)
+            banner_parse = []
+            # print(page.tag, page.attrib)
 
             for item in page.findall('text'):
-            # for item in page:
+
+                # Check if the item is a team: player tag
                 if (item.text is not None):
+                    item_top = int(item.attrib['top'])
+                    item_left = int(item.attrib['left'])
+                    
+                    # -- Parse for Shots --
                     if (': ' in item.text):
                         # These are all of the shots
-                        item_top = int(item.attrib['top'])
-                        item_left = int(item.attrib['left'])
                         shots.append([page_num, item_top, item_left])
                         player = throw_num = throw_type = throw_rating = throw_turn =  None
                         for element in page.findall('text'):
                             # For each element, check if it is in the zone of the name label
                             element_top = int(element.attrib['top'])
                             element_left = int(element.attrib['left'])
-                            if (((element_top - item_top) <= down_buf) and ((element_top - item_top) >= -up_buf)
-                            and ((element_left - item_left) <= right_buf) and ((element_left - item_left) >= -left_buf)):
+                            if (((element_top - item_top) <= shot_buffers['down']) and ((element_top - item_top) >= -shot_buffers['up'])
+                            and ((element_left - item_left) <= shot_buffers['right']) and ((element_left - item_left) >= -shot_buffers['left'])):
                                 # If the difference is zero, set the name
                                 if (element_top == item_top) and (element_left == item_left):
                                     # If the element is the player
@@ -108,13 +128,81 @@ def main():
                                     # Else do this
                                     throw_turn = element.text
                                     
-                                print(element.text)
+                                # print(element.text)
                         shots[-1].extend([player, throw_num, throw_type, throw_rating, throw_turn])
-                        print('')
+                        # print('')
+                    
+                    # -- Parse for Score --
+                    # This is for the more common string case
+                    if ('=' in item.text) and (abs(item_top - 225) < 5):
+                        banner_parse.append((int(item.attrib['top']), int(item.attrib['left']), int(item.text.split()[-1].strip(' ='))))
+                    
+                    # Less common split case
+                    if (abs(item_top - 225 < 5)) and (len(item.text.strip()) < 3) and (len(item.text.strip()) > 0) and all(x not in item.text for x in ['+', '-']):
+                        banner_parse.append((int(item.attrib['top']), int(item.attrib['left']), int(item.text.strip())))
+                    
+                    # -- Parse for Title Info --
+                    # Only check first page
+                    if int(page.attrib['number']) == 1:
+                        # Check for the start time
+                        if 'Start Time' in item.text:
+                            start_time = item.text.strip().split()[-1]
+                        # Check for the date
+                        if (len(item.text.strip().split()) == 4) and (item_top > date_box['top']) and (item_top < date_box['bottom']) and (item_left < date_box['right']):
+                            date = item.text.strip()
+                        # Check for a sheet label
+                        if (item_top < 200) and ('Sheet' in item.text):
+                            sheet = sheet_pattern.findall(item.text)[0]
+                            
+                        # Check for the rest of the headers
+                        if (item_top < headers_box['bottom']):
+                            header_parse.append(item.text)
+                            
+                        
+
+            # -- Page Parsing --
+                    
+            # Each page will have either 
+            if len(banner_parse) == 2:
+                team_1_score = banner_parse[0][2]
+                team_2_score = banner_parse[1][2]
+            elif len(banner_parse) == 4:
+                team_1_score = banner_parse[0][2] + banner_parse[2][2]
+                team_2_score = banner_parse[1][2] + banner_parse[3][2]
+            else:
+                team_1_score = 99
+                team_2_score = 99
+                logger.warning(f"Found invalid set of score elements")
+                
+            # print(banner_parse)
+            # print(f"Score: {team_1_score} : {team_2_score}")
+
+            end_number = int(page.attrib['number'])
+        
+        # -- Document Parsing --
+        # header_parse.sort(key=lambda x: len(x))
+        header_pattern = re.compile(r'.* [0-9]{4}')
+        for i in sorted(header_parse, key=len):
+            if header_pattern.findall(i):
+                title = i
+            elif i == 'Curling':
+                title 
+                        
+
+        print(start_time)
+        print(date)
+        print(sheet)
+        print(title)
+        print(header_parse)
+                        
+        print('\n')
+
+
+
     
     # Have to look for 'prepositioned stones'
-    for i in shots:
-        print(i)
+    # for i in shots:
+    #     print(i)
 
 
 
@@ -133,9 +221,9 @@ def remove_spans(filename):
     Args:
         filename (_type_): The filename of the file to remove the spans from
     """
-    with open(join(base_directory, 'shots_xml', filename), "r") as fh:
+    with open(join(base_directory, 'shots_xml', filename), "r", encoding = "ISO-8859-1") as fh:
         xml_text = fh.read()
-        xml_text = re.sub(r'<\/span>.*ft1\">', ' ', xml_text)
+        xml_text = re.sub(r'</span>.*">', ' ', xml_text)
 
     with open(join(base_directory, 'shots_xml', filename), "w") as fh:
         fh.write(xml_text)
