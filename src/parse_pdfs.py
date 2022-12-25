@@ -1,6 +1,6 @@
 
 import logging
-from os import mkdir, listdir, system
+from os import mkdir, listdir, system, remove
 from os.path import isdir, isfile, join
 from pathlib import Path
 import re
@@ -53,12 +53,79 @@ logger.addHandler(s_handler)
 
 def main():
 
-    # Create/connect to database
+    # --- Create/connect to database ---
     # db = CurlingDB()
     # db.drop_tables()
     # db.create_tables()
 
-    tournaments = {x.split('-')[0]: x for x in listdir(join(base_directory, 'shots_xml'))}
+
+    pdf_dir = join(base_directory, 'src', 'sample_pdfs')
+    temp_dir = join(base_directory, 'src', 'temp')
+
+    tournaments = {x.split('-')[0]: x for x in listdir(pdf_dir)}
+
+    for tournament in tournaments.keys():
+        tournament_name = ''
+        tournament_start_date = ''
+        tournament_end_date = ''
+        tournament_location = ''
+
+        pdfs = [pdf for pdf in listdir(pdf_dir) if (pdf.startswith(tournament)) and (pdf.endswith('pdf'))]
+        for pdf in pdfs:
+            # --- Steps ---
+            # Take a pdf file 
+            # Convert the pdf to xml for text parsing - complete
+            # Run the xml through the span cleaning - complete
+            # Convert the pdf to images for stone parsing - complete
+            # Parse the xml for text - complete
+            # Parse the images for the stone locations - complete
+            # Delete the xml and images - can do, TODO
+            # Enter into database - TODO
+            
+            logger.info(f"Beginning pdf: {pdf}")
+            
+            # -- Convert pdf to xml --
+            pdf = pdf.replace(r"'", r"\'").strip()
+            pdf_to_xml(pdf, pdf_dir=pdf_dir, temp_dir=temp_dir)
+
+            xml = [xml for xml in listdir(temp_dir) if xml.endswith('xml')][0]
+
+            # Remove the erroneous <span> elements
+            remove_spans(xml, temp_dir=temp_dir)
+
+            # -- Convert pdf to images --
+            pdf_to_img(pdf, zoom=8, pdf_dir=pdf_dir, temp_dir=temp_dir)
+
+            # -- Parse xml --
+            tourney_info, doc_info, page_df, shot_df = parse_text(xml, temp_dir=temp_dir)
+
+            # -- Parse images --
+            image_files = [img_ for img_ in listdir(temp_dir) if img_.startswith('page')]
+            all_stones = []
+            hammers = []
+            dir_of_play_list = []
+            for i, img_filename in enumerate(image_files):
+                stones, hammer, dir_of_play = get_stone_positions(join(temp_dir, img_filename), i + 1)
+                all_stones.append(stones)
+                hammers.append(hammer)
+                dir_of_play_list.append(dir_of_play)
+            
+            all_stones = pd.concat(all_stones)
+
+            # -- Remove temporary files --
+            for temp_file in listdir(temp_dir):
+                remove(join(temp_dir, temp_file))
+            
+            print('\n\n')
+            
+            
+            
+
+
+
+
+        # --- Make SQL commands
+        
 
     # doc = 'CUR_1819_CWC_4P-Men\'s_Teams-03~Session_3-NOR-SCO.pdf'
     # doc = 'CUR_1819_CWC_4P-Men\'s_Teams-03~Session_3-NOR-SCO.xml'
@@ -106,7 +173,7 @@ def main():
     # Run the xml through the span cleaning - complete
     # Convert the pdf to images for stone parsing - complete
     # Parse the xml for text - complete
-    # Parse the images for the stone locations - Need to identify house location
+    # Parse the images for the stone locations - complete
     # Delete the xml and images - can do, TODO
     # Enter into database - TODO
     
@@ -118,7 +185,7 @@ def main():
     
     # Profit?
 
-def get_stone_positions(filename: str, end_num: int) -> pd.DataFrame:
+def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str, bool]:
     """Take a full path to a file and return a dataframe with the stone positions.
 
     Args:
@@ -128,7 +195,9 @@ def get_stone_positions(filename: str, end_num: int) -> pd.DataFrame:
         pd.DataFrame: Dataframe with columns [colour, x, y] containing all of the full-size stones.
     """
 
-    # This is not 100%, there are some complicated things going on here.
+    logger.info(f"Parsing the images")
+
+    # The actual stone detection is not 100%, there are some complicated things going on here.
     # Weaknesses include finding stones that are slightly overlapping with locations of previous stones, many of these are ignored
     # - This can be adjusted by the continuation thresholds
 
@@ -161,6 +230,7 @@ def get_stone_positions(filename: str, end_num: int) -> pd.DataFrame:
         con_bound = [cv2.boundingRect(con) for con in contours]
 
         # -- Find the absolute locations of all of the stones --
+
         # Check for the hammer, checks the third cell
         # - Can't use the first cell as it may be prepositioned stones for mixed doubles
         # - Can't check the first stone to appear in the play space because someone might miss the first throw
@@ -182,10 +252,11 @@ def get_stone_positions(filename: str, end_num: int) -> pd.DataFrame:
             else:
                 hammer = 'incon'
             
+            # Use the location of the small stones to identify the direciton of play
             dir_of_play_down: bool = small_stones[0][0][0][1] < 1925
 
-        # For enumerate contours, if contour centre is inside only one bounding box, then add it to good list
-        good_con = []
+        # For enumerated contours, if contour centre is inside only one bounding box, then add it to good list
+        valid_con = []
         for i, con in enumerate(contours):
             # If bounding box is too small or large, skip, if the length of the contour is too small or large, skip
             if min(con_bound[i][2:]) < 25: continue
@@ -203,11 +274,11 @@ def get_stone_positions(filename: str, end_num: int) -> pd.DataFrame:
                     if count > 1:
                         break
             else:
-                good_con.append(con)
+                valid_con.append(con)
             
         # Find the centres of the rocks
         # This is an averaging of the bounding box and mean
-        for con in good_con:
+        for con in valid_con:
             con_unwrap = [x[0] for x in con]
             centroid_x = round(sum([x[0] for x in con_unwrap])/len(con_unwrap))
             centroid_y = round(sum([x[1] for x in con_unwrap])/len(con_unwrap)) 
@@ -223,10 +294,8 @@ def get_stone_positions(filename: str, end_num: int) -> pd.DataFrame:
     # Find the outlines of the frames, they slightly vary in size
     contours, _ = cv2.findContours(black_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Filter to only the frames
-    bounding = [cv2.boundingRect(con) for con in contours]
-    contours = [con for i, con in enumerate(contours) if bounding[i][2] > 500 and bounding[i][3] > 900]
-    bounding = [cv2.boundingRect(con) for con in contours]
+    # Filter to only the frame bouning boxes
+    bounding = [bound for bound in [cv2.boundingRect(con) for con in contours] if (bound[2] > 500) and (bound[3] > 900)]
     # Construct a list of the houses/frames, noting the index of the frame and location of the house
     houses = []
     for bound in bounding:
@@ -259,23 +328,9 @@ def get_stone_positions(filename: str, end_num: int) -> pd.DataFrame:
     return pd.DataFrame(parsed_stones, columns=['end', 'frame_x', 'frame_y', 'stone_colour', 'x', 'y']), hammer, dir_of_play_down
 
     
-def pdf_to_img(filename: str, zoom: int=8):
-    """Take a file name and convert all pages to images, saved in the sample_images directory
+def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.DataFrame]:
 
-    Args:
-        filename (str): filename of pdf to convert to images
-    """
-
-    doc = fitz.open(join(base_directory, 'src', filename))
-    # Parse the pdf into images
-    for i, page in enumerate(doc.pages()):
-        pix = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom))
-        pix.save(join(base_directory, 'src', 'sample_images', f"page_{i + 1}.png"))
-        logger.info(f"Completed {i}")
-
-        
-def parse_text(filename) -> tuple[str, tuple, pd.DataFrame, pd.DataFrame]:
-    xmls = [x for x in listdir(join(base_directory, 'src', 'sample_xmls')) if x.endswith('.xml')]
+    logger.info(f"Parsing the xml")
 
     # Zones and buffers
     shot_buffers = {'left': 20, 'right': 115, 'up': 240, 'down': 13}
@@ -288,7 +343,7 @@ def parse_text(filename) -> tuple[str, tuple, pd.DataFrame, pd.DataFrame]:
     shot_info = []
 
     # Get the root of the xml file
-    root = et.parse(filename).getroot()
+    root = et.parse(join(temp_dir, filename)).getroot()
 
     # TODO: This is where I can find the tournament and session information        
     # Initialize the per-document fields, some of them might not parse correctly
@@ -344,13 +399,17 @@ def parse_text(filename) -> tuple[str, tuple, pd.DataFrame, pd.DataFrame]:
                     shot_info[-1].extend([player, throw_num, throw_type, throw_rating, throw_turn])
                 
                 # -- Parse for End Score --
+                # Apparently the added number can also take the value of X
                 # This is for the more common string case
                 if ('=' in item.text) and (abs(item_top - 225) < 5):
                     banner_parse.append((int(item.attrib['top']), int(item.attrib['left']), int(item.text.split()[-1].strip(' ='))))
                 
                 # Less common split case
-                if (abs(item_top - 225 < 5)) and (len(item.text.strip()) < 3) and (len(item.text.strip()) > 0) and all(x not in item.text for x in ['+', '-']):
-                    banner_parse.append((int(item.attrib['top']), int(item.attrib['left']), int(item.text.strip())))
+                if (abs(item_top - 225 < 5)) and (len(item.text.strip()) < 3) and (len(item.text.strip()) > 0) and all(x not in item.text for x in ['+', '-', 'X']):
+                    if item.text.strip() == 'X':
+                        banner_parse.append((int(item.attrib['top']), int(item.attrib['left']), 0))
+                    else:
+                        banner_parse.append((int(item.attrib['top']), int(item.attrib['left']), int(item.text.strip())))
                 
                 # -- Parse for Title Info --
                 # Only check first page
@@ -404,40 +463,16 @@ def parse_text(filename) -> tuple[str, tuple, pd.DataFrame, pd.DataFrame]:
 
     return tourney_info, doc_info, page_df, shot_df
                     
-                    
+
+def pdf_to_xml(filename: str, pdf_dir: str, temp_dir: str):
+    """Convert given pdf to xml, requires full filepath"""
+
+    cmd = f"pdftohtml -xml {join(pdf_dir, filename).strip()} {join(temp_dir, filename[:-4])}"
+    logger.info(f"Creating xml from pdf: {cmd}")
+    system(cmd)
 
 
-
-    
-    # Have to look for 'prepositioned stones'
-    # for i in shots:
-    #     print(i)
-
-
-
-    
-    # I think that the winner is pdftohtml for the metadata
-    # Can just convert each of the files and take stuff by location
-    # Find the player name of each and build a box around it to find the number, throw type, score and throw number
-
-    
-    # First line is typically the tournament name followed by a location
-
-
-def remove_spans(filename):
-    """There are some weird spans introduced in the parsing but this will remove them in place.
-
-    Args:
-        filename (str): The full filename of the file to remove the spans from
-    """
-    with open(filename) as fh:
-        xml_text = fh.read()
-        xml_text = re.sub(r'</span>.*">', ' ', xml_text)
-
-    with open(filename, "w") as fh:
-        fh.write(xml_text)
-
-def pdf_to_xml():
+def pdf_to_xml_all():
     """Cycle through pdfs and create xmls using pdftohtml with the xml option."""
 
     if not isdir(join(base_directory, 'shots_xml')):
@@ -446,8 +481,39 @@ def pdf_to_xml():
     pdfs = [x.strip().replace(r"'", r"\'") for x in listdir(join(base_directory, 'shots'))]
     for pdf in tqdm(pdfs):
         cmd = f"pdftohtml -xml {join(base_directory, 'shots', pdf).strip()} {join(base_directory, 'shots_xml', pdf[:-4])}"
-        print(cmd)
-        i = system(cmd)
+        logger.info(f"Executing command: {cmd}")
+        system(cmd)
+
+
+def remove_spans(filename, temp_dir: str):
+    """There are some weird spans introduced in the parsing but this will remove them in place.
+
+    Args:
+        filename (str): The full filename of the file to remove the spans from
+    """
+    logger.info(f"Removing spans from xml: {filename}")
+    with open(join(temp_dir, filename), 'r', encoding='ISO-8859-1') as fh:
+        xml_text = fh.read()
+        xml_text = re.sub(r'</span>.*">', ' ', xml_text)
+
+    with open(join(temp_dir, filename), "w", encoding='ISO-8859-1') as fh:
+        fh.write(xml_text)
+
+
+def pdf_to_img(filename: str, pdf_dir: str, temp_dir: str, zoom: int=8):
+    """Take a file name and convert all pages to images, saved in the sample_images directory
+
+    Args:
+        filename (str): filename of pdf to convert to images
+    """
+
+    logger.info(f"Creating images from pdf pages")
+    doc = fitz.open(join(pdf_dir, filename))
+    # Parse the pdf into images
+    for i, page in enumerate(doc.pages()):
+        pix = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom))
+        pix.save(join(temp_dir, f"page_{i + 1}.png"))
+        logger.info(f"Completed page/image {i + 1}")
 
 
 if __name__ == '__main__':

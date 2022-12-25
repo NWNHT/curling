@@ -46,7 +46,12 @@ CREATE TABLE Player (
 );
 
 CREATE TABLE Position (
-    position_id INTEGER NOT NULL PRIMARY KEY
+    position_id INTEGER NOT NULL PRIMARY KEY,
+    frame_num INTEGER NOT NULL,
+
+    end_id INTEGER,
+    FOREIGN KEY(end_id) REFERENCES End(end_id)
+
 );
 
 CREATE TABLE Stone (
