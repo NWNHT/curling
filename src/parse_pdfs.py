@@ -61,8 +61,8 @@ def main():
     tournaments = {x.split('-')[0]: x for x in listdir(join(base_directory, 'shots_xml'))}
 
     # doc = 'CUR_1819_CWC_4P-Men\'s_Teams-03~Session_3-NOR-SCO.pdf'
-    doc = 'CUR_1819_CWC_4P-Men\'s_Teams-03~Session_3-NOR-SCO.xml'
-    doc = 'CU_WMCC2016P-Men\'s_Teams-01~Session_1-GER-SUI.pdf'
+    # doc = 'CUR_1819_CWC_4P-Men\'s_Teams-03~Session_3-NOR-SCO.xml'
+    # doc = 'CU_WMCC2016P-Men\'s_Teams-01~Session_1-GER-SUI.pdf'
     # pdf_to_img(doc, 8)
     # quit()
 
@@ -70,21 +70,35 @@ def main():
 
 
     # --- Stone Detection ---
-    # stones = pd.concat([get_stone_positions(filename=join(base_directory, 'src', 'sample_images', f'page_{page_num}.png')) for page_num in range(1, 9)])
+    # In production this will run from 1 to the length of the pdf
+    stones = pd.concat([get_stone_positions(filename=join(base_directory, 'src', 'sample_images', f'page_{page_num}.png'), end_num=page_num)[0] for page_num in range(1, 9)])
+    # stones, hammer = get_stone_positions(filename=join(base_directory, 'src', 'sample_images', f'page_{1}.png'), end_num=1)
+    # stones2, hammer = get_stone_positions(filename=join(base_directory, 'src', 'sample_images', f'page_{2}.png'), end_num=2)
+    # stones = pd.concat([stones, stones2])
+    print(len(stones.query('(abs(x) > 308) | (y > 866) | (y < -248)')))
+    g = (gg.ggplot(stones, gg.aes(x='x', y='y', colour='factor(stone_colour)')) 
+         + gg.geom_point(size=4)
+         + gg.facet_grid('. ~ end')
+         + gg.scale_color_manual(values=['red', 'yellow'])
+         + gg.xlim((-308, 308))
+         + gg.ylim((-248, 866))
+         + gg.theme(figure_size=(6 * max(stones['end']), 9))
+         )
+    print(g)
 
     # print(stones.shape)
     # print(stones.info())
     # print(stones.describe())
 
-    # g = gg.ggplot(stones, gg.aes(x='x', y='-y', colour='factor(stone_colour)')) + gg.geom_point()
+    # g = gg.ggplot(stones, gg.aes(x='x', y='-y', colour='factor(stone_colour)')) + gg.geom_point(alpha=0.2) + gg.scale_y_continuous(breaks=lambda x: list(range(int(x[0]), int(x[1]), 200))) + gg.scale_x_continuous(breaks=lambda x: list(range(int(x[0]), int(x[1]), 100)))
     # print(g)
 
     # --- Text Parsing ---
-    title, doc_info, page_df, shot_df = parse_text(join(base_directory, 'src', 'sample_xmls', list(tournaments.values())[1]))
-    print(title)
-    print(doc_info)
-    print(page_df)
-    print(shot_df.info())
+    # title, doc_info, page_df, shot_df = parse_text(join(base_directory, 'src', 'sample_xmls', list(tournaments.values())[1]))
+    # print(title)
+    # print(doc_info)
+    # print(page_df)
+    # print(shot_df.info())
 
     # --- Steps ---
     # Take a pdf file 
@@ -104,7 +118,7 @@ def main():
     
     # Profit?
 
-def get_stone_positions(filename: str) -> pd.DataFrame:
+def get_stone_positions(filename: str, end_num: int) -> pd.DataFrame:
     """Take a full path to a file and return a dataframe with the stone positions.
 
     Args:
@@ -124,6 +138,8 @@ def get_stone_positions(filename: str) -> pd.DataFrame:
     upper_yellow = np.array([32, 255, 255])
     lower_blue = np.array([120, 225, 225])
     upper_blue = np.array([130, 255, 255])
+    lower_black = np.array([0, 0, 0])
+    upper_black = np.array([1, 1, 1])
 
     # Convert the image into a cv2 BGR object
     frame = cv2.imread(filename)
@@ -134,18 +150,44 @@ def get_stone_positions(filename: str) -> pd.DataFrame:
     yellow_mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
     blue_mask = cv2.inRange(hsv, lower_blue, upper_blue)
     yellow_mask = cv2.bitwise_or(yellow_mask, blue_mask)
+    black_mask = cv2.inRange(hsv, lower_black, upper_black)
 
     stones = []
+    hammer = ''
 
     for stone_colour, colour_mask in {'red': red_mask, 'yellow': yellow_mask}.items():
         # Find contours and bounding boxes
         contours, _ = cv2.findContours(colour_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         con_bound = [cv2.boundingRect(con) for con in contours]
 
+        # -- Find the absolute locations of all of the stones --
+        # Check for the hammer, checks the third cell
+        # - Can't use the first cell as it may be prepositioned stones for mixed doubles
+        # - Can't check the first stone to appear in the play space because someone might miss the first throw
+        # - Instead counts the tiny stones in the third cell
+        if stone_colour == 'red':
+
+            # Complicated parsing to narrow down to the small stones in the third cell
+            small_stones = [con for con in contours if (len(con) < 40) 
+                                                   and (len(con) > 15)
+                                                   and (con[0][0][1] > 1200)
+                                                   and (con[0][0][1] < 2650)
+                                                   and (con[0][0][0] > 1600)
+                                                   and (con[0][0][0] < 2400)]
+            stone_num = len(small_stones)
+            if any(stone_num == x for x in [4, 6]):
+                hammer = 'red'
+            elif any(stone_num == x for x in [5, 7]):
+                hammer = 'yellow'
+            else:
+                hammer = 'incon'
+            
+            dir_of_play_down: bool = small_stones[0][0][0][1] < 1925
+
         # For enumerate contours, if contour centre is inside only one bounding box, then add it to good list
         good_con = []
         for i, con in enumerate(contours):
-            # If bounding box is too small or large, skip
+            # If bounding box is too small or large, skip, if the length of the contour is too small or large, skip
             if min(con_bound[i][2:]) < 25: continue
             elif max(con_bound[i][2:]) > 50: continue
             elif (len(con) < 40) or (len(con) > 75): continue
@@ -163,7 +205,6 @@ def get_stone_positions(filename: str) -> pd.DataFrame:
             else:
                 good_con.append(con)
             
-
         # Find the centres of the rocks
         # This is an averaging of the bounding box and mean
         for con in good_con:
@@ -176,10 +217,46 @@ def get_stone_positions(filename: str) -> pd.DataFrame:
             avg_x = round((centroid_x + x + w/2)/2)
             avg_y = round((centroid_y + y + h/2)/2)
         
-            stones.append((stone_colour, avg_x, avg_y))
+            stones.append((stone_colour, end_num, avg_x, avg_y))
     
+    # -- Find the houses --
+    # Find the outlines of the frames, they slightly vary in size
+    contours, _ = cv2.findContours(black_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Filter to only the frames
+    bounding = [cv2.boundingRect(con) for con in contours]
+    contours = [con for i, con in enumerate(contours) if bounding[i][2] > 500 and bounding[i][3] > 900]
+    bounding = [cv2.boundingRect(con) for con in contours]
+    # Construct a list of the houses/frames, noting the index of the frame and location of the house
+    houses = []
+    for bound in bounding:
+        orig_x = bound[0] + (bound[2] - 3)/2
+        if dir_of_play_down:
+            orig_y = bound[1] + 907 # 907.5 - Bottom House
+        else:
+            orig_y = bound[1] + 328 # 328.5 - Top House
+        
+        # Find the location index
+        ind_x = (bound[0] - 288) // 730
+        ind_y = (bound[1] - 1355) // 1438
+
+        houses.append((end_num, ind_x, ind_y, orig_x, orig_y))
+    
+    # -- Find positions of stones in houses --
+    # For each frame, find position of each stone relative to centre of house
+    parsed_stones = []
+    for bound, (_, ind_x, ind_y, orig_x, orig_y) in zip(bounding, houses):
+        for stone in stones:
+            # For each stone inside the frame
+            if (stone[2] > bound[0]) and (stone[2] < (bound[0] + bound[2])) and (stone[3] > (bound[1] + 42)) and (stone[3] < (bound[1] + bound[3] - 42)):
+                if dir_of_play_down:
+                    parsed_stones.append((end_num, ind_x, ind_y, stone[0], (stone[2] - orig_x), -(stone[3] - orig_y)))
+                else:
+                    parsed_stones.append((end_num, ind_x, ind_y, stone[0], -(stone[2] - orig_x), (stone[3] - orig_y)))
+        
+    # -- Return stone data --
     logger.info(f"Completed stone parsing page {filename.split('/')[-1]}")
-    return pd.DataFrame(stones, columns=['stone_colour', 'x', 'y'])
+    return pd.DataFrame(parsed_stones, columns=['end', 'frame_x', 'frame_y', 'stone_colour', 'x', 'y']), hammer, dir_of_play_down
 
     
 def pdf_to_img(filename: str, zoom: int=8):
@@ -235,6 +312,8 @@ def parse_text(filename) -> tuple[str, tuple, pd.DataFrame, pd.DataFrame]:
                 item_left = int(item.attrib['left'])
                 
                 # -- Parse for Shots --
+                if ('Prepositioned Stones' in item.text):
+                    pass
                 if (': ' in item.text):
                     # These are all of the shots
                     shot_info.append([page_num, item_top, item_left])
@@ -358,7 +437,7 @@ def remove_spans(filename):
     with open(filename, "w") as fh:
         fh.write(xml_text)
 
-def pdf_to_html():
+def pdf_to_xml():
     """Cycle through pdfs and create xmls using pdftohtml with the xml option."""
 
     if not isdir(join(base_directory, 'shots_xml')):

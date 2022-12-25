@@ -53,3 +53,473 @@
 2022-12-21 06:18:54,951 - DEBUG - Committing to database. - __main__.utils.DBConn
 2022-12-21 06:18:54,951 - INFO - Creating all tables. - __main__.utils.DBConn
 2022-12-21 06:18:54,953 - DEBUG - Committing to database. - __main__.utils.DBConn
+2022-12-22 11:47:49,679 - INFO - Completed 0 - __main__
+2022-12-22 11:47:50,283 - INFO - Completed 1 - __main__
+2022-12-22 11:47:50,889 - INFO - Completed 2 - __main__
+2022-12-22 11:47:51,494 - INFO - Completed 3 - __main__
+2022-12-22 11:47:52,098 - INFO - Completed 4 - __main__
+2022-12-22 11:47:52,689 - INFO - Completed 5 - __main__
+2022-12-22 11:47:53,295 - INFO - Completed 6 - __main__
+2022-12-22 11:47:53,907 - INFO - Completed 7 - __main__
+2022-12-23 06:30:10,318 - INFO - Completed 0 - __main__
+2022-12-23 06:30:12,451 - INFO - Completed 1 - __main__
+2022-12-23 06:30:14,589 - INFO - Completed 2 - __main__
+2022-12-23 06:30:16,728 - INFO - Completed 3 - __main__
+2022-12-23 06:30:18,872 - INFO - Completed 4 - __main__
+2022-12-23 06:30:21,014 - INFO - Completed 5 - __main__
+2022-12-23 06:30:23,154 - INFO - Completed 6 - __main__
+2022-12-23 06:30:25,286 - INFO - Completed 7 - __main__
+2022-12-23 07:31:17,150 - INFO - Completed 0 - __main__
+2022-12-23 07:31:17,347 - INFO - Completed 1 - __main__
+2022-12-23 07:31:17,538 - INFO - Completed 2 - __main__
+2022-12-23 07:31:17,730 - INFO - Completed 3 - __main__
+2022-12-23 07:31:17,919 - INFO - Completed 4 - __main__
+2022-12-23 07:31:18,109 - INFO - Completed 5 - __main__
+2022-12-23 07:31:18,302 - INFO - Completed 6 - __main__
+2022-12-23 07:31:18,496 - INFO - Completed 7 - __main__
+2022-12-23 07:31:59,173 - INFO - Completed 0 - __main__
+2022-12-23 07:31:59,776 - INFO - Completed 1 - __main__
+2022-12-23 07:32:00,380 - INFO - Completed 2 - __main__
+2022-12-23 07:32:00,978 - INFO - Completed 3 - __main__
+2022-12-23 07:32:01,569 - INFO - Completed 4 - __main__
+2022-12-23 07:32:02,181 - INFO - Completed 5 - __main__
+2022-12-23 07:32:02,814 - INFO - Completed 6 - __main__
+2022-12-23 07:32:03,425 - INFO - Completed 7 - __main__
+2022-12-23 07:42:21,887 - INFO - Completed 0 - __main__
+2022-12-23 07:42:21,959 - INFO - Completed 1 - __main__
+2022-12-23 07:42:22,029 - INFO - Completed 2 - __main__
+2022-12-23 07:42:22,101 - INFO - Completed 3 - __main__
+2022-12-23 07:42:22,173 - INFO - Completed 4 - __main__
+2022-12-23 07:42:22,244 - INFO - Completed 5 - __main__
+2022-12-23 07:42:22,315 - INFO - Completed 6 - __main__
+2022-12-23 07:42:22,386 - INFO - Completed 7 - __main__
+2022-12-23 07:43:21,235 - INFO - Completed 0 - __main__
+2022-12-23 07:43:21,425 - INFO - Completed 1 - __main__
+2022-12-23 07:43:21,619 - INFO - Completed 2 - __main__
+2022-12-23 07:43:21,810 - INFO - Completed 3 - __main__
+2022-12-23 07:43:22,005 - INFO - Completed 4 - __main__
+2022-12-23 07:43:22,205 - INFO - Completed 5 - __main__
+2022-12-23 07:43:22,401 - INFO - Completed 6 - __main__
+2022-12-23 07:43:22,593 - INFO - Completed 7 - __main__
+2022-12-23 07:43:28,427 - INFO - Completed 0 - __main__
+2022-12-23 07:43:28,619 - INFO - Completed 1 - __main__
+2022-12-23 07:43:28,808 - INFO - Completed 2 - __main__
+2022-12-23 07:43:29,001 - INFO - Completed 3 - __main__
+2022-12-23 07:43:29,192 - INFO - Completed 4 - __main__
+2022-12-23 07:43:29,382 - INFO - Completed 5 - __main__
+2022-12-23 07:43:29,573 - INFO - Completed 6 - __main__
+2022-12-23 07:43:29,765 - INFO - Completed 7 - __main__
+2022-12-23 07:45:59,369 - INFO - Completed 0 - __main__
+2022-12-23 07:45:59,757 - INFO - Completed 1 - __main__
+2022-12-23 07:46:00,150 - INFO - Completed 2 - __main__
+2022-12-23 07:46:00,537 - INFO - Completed 3 - __main__
+2022-12-23 07:46:00,929 - INFO - Completed 4 - __main__
+2022-12-23 07:46:01,318 - INFO - Completed 5 - __main__
+2022-12-23 07:46:01,708 - INFO - Completed 6 - __main__
+2022-12-23 07:46:02,102 - INFO - Completed 7 - __main__
+2022-12-23 07:47:31,116 - INFO - Completed 0 - __main__
+2022-12-23 07:47:31,711 - INFO - Completed 1 - __main__
+2022-12-23 07:47:32,322 - INFO - Completed 2 - __main__
+2022-12-23 07:47:32,919 - INFO - Completed 3 - __main__
+2022-12-23 07:47:33,529 - INFO - Completed 4 - __main__
+2022-12-23 07:47:34,128 - INFO - Completed 5 - __main__
+2022-12-23 07:47:34,738 - INFO - Completed 6 - __main__
+2022-12-23 07:47:35,333 - INFO - Completed 7 - __main__
+2022-12-23 11:25:20,463 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:25:20,464 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:25:20,465 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:25:20,466 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:25:20,466 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:25:20,467 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:25:20,467 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:25:20,468 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:26:29,825 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:26:29,826 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:26:29,827 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:26:29,827 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:26:29,828 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:26:29,828 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:26:29,829 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:26:29,830 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:27:03,348 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:27:03,348 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:27:03,349 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:27:03,350 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:27:03,350 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:27:03,351 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:27:03,351 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:27:03,352 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:28:40,414 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:28:40,415 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:28:40,416 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:28:40,417 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:28:40,417 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:28:40,418 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:28:40,418 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 11:28:40,419 - INFO - Completed text parsing of page CUR_1819_CWC_4P-Men's_Teams-03~Session_3-NOR-SCO.xml - __main__
+2022-12-23 12:19:03,327 - INFO - Completed text parsing of page CUR_WWCC2017P-Women's_Teams-16~Session_16-USA-KOR.xml - __main__
+2022-12-23 12:19:03,329 - INFO - Completed text parsing of page CUR_WWCC2017P-Women's_Teams-16~Session_16-USA-KOR.xml - __main__
+2022-12-23 12:19:03,329 - INFO - Completed text parsing of page CUR_WWCC2017P-Women's_Teams-16~Session_16-USA-KOR.xml - __main__
+2022-12-23 12:19:03,330 - INFO - Completed text parsing of page CUR_WWCC2017P-Women's_Teams-16~Session_16-USA-KOR.xml - __main__
+2022-12-23 12:19:03,331 - INFO - Completed text parsing of page CUR_WWCC2017P-Women's_Teams-16~Session_16-USA-KOR.xml - __main__
+2022-12-23 12:19:03,331 - INFO - Completed text parsing of page CUR_WWCC2017P-Women's_Teams-16~Session_16-USA-KOR.xml - __main__
+2022-12-23 12:19:03,332 - INFO - Completed text parsing of page CUR_WWCC2017P-Women's_Teams-16~Session_16-USA-KOR.xml - __main__
+2022-12-23 12:19:03,332 - INFO - Completed text parsing of page CUR_WWCC2017P-Women's_Teams-16~Session_16-USA-KOR.xml - __main__
+2022-12-23 12:19:03,333 - INFO - Completed text parsing of page CUR_WWCC2017P-Women's_Teams-16~Session_16-USA-KOR.xml - __main__
+2022-12-23 12:19:03,334 - INFO - Completed text parsing of page CUR_WWCC2017P-Women's_Teams-16~Session_16-USA-KOR.xml - __main__
+2022-12-23 12:20:33,214 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:20:33,216 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:20:33,216 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:20:33,217 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:20:33,218 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:20:33,218 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:20:33,219 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:20:33,219 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:20:33,220 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:20:33,221 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:28:04,069 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:28:04,070 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:28:04,071 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:28:04,071 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:28:04,072 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:28:04,072 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:28:04,073 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:28:04,074 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:28:04,074 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-23 12:28:04,075 - INFO - Completed text parsing of page CUR_WJCC2017P-Women's_Teams-12~Session_12-KOR-RUS.xml - __main__
+2022-12-24 07:05:02,604 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:05:02,870 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:05:03,154 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:05:03,417 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:05:03,677 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:05:03,944 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:05:04,221 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:05:04,485 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:09:31,300 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:09:31,567 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:09:31,834 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:09:32,102 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:09:32,369 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:09:32,645 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:09:32,915 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:09:33,178 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:09:47,518 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:09:47,790 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:09:48,061 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:09:48,334 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:09:48,611 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:09:48,876 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:09:49,148 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:09:49,419 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:13:42,141 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:13:42,411 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:13:42,674 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:13:42,943 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:13:43,206 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:13:43,466 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:13:43,745 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:13:44,008 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:16:07,520 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:16:07,799 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:16:08,077 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:16:08,340 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:16:08,604 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:16:08,870 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:16:09,134 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:16:09,396 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:23:07,423 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:23:07,692 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:23:07,958 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:23:08,218 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:23:08,482 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:23:08,748 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:23:09,017 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:23:09,305 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:38:30,802 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:38:31,070 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:38:31,360 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:38:31,627 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:38:31,897 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:38:32,173 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:38:32,446 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:38:32,717 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:39:49,168 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:39:49,429 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:39:49,692 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:39:49,956 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:39:50,229 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:39:50,497 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:39:50,768 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:39:51,037 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:40:10,180 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:40:10,447 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:40:10,722 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:40:10,992 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:40:11,264 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:40:11,527 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:40:11,790 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:40:12,056 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:42:36,803 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:42:37,073 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:42:37,340 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:42:37,612 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:42:37,877 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:42:38,150 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:42:38,411 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:42:38,672 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:43:04,261 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:43:04,537 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:43:04,797 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:43:05,057 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:43:05,318 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:43:05,583 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:43:05,848 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:43:06,118 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:43:33,733 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:43:34,004 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:43:34,266 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:43:34,543 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:43:34,817 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:43:35,077 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:43:35,337 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:43:35,598 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:43:53,665 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:43:53,935 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:43:54,205 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:43:54,473 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:43:54,749 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:43:55,011 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:43:55,274 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:43:55,536 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:46:59,907 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:47:00,174 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:47:00,436 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:47:00,697 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:47:00,966 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:47:01,236 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:47:01,501 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:47:01,770 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:48:57,031 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:48:57,299 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:48:57,575 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:48:57,843 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:48:58,110 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:48:58,372 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:48:58,634 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:48:58,911 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 07:51:36,802 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 07:51:37,069 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 07:51:37,349 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 07:51:37,616 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 07:51:37,897 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 07:51:38,181 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 07:51:38,451 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 07:51:38,733 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 08:11:43,299 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 08:11:43,564 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 08:11:43,845 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 08:11:44,125 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 08:11:44,386 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 08:11:44,647 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 08:11:44,910 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 08:11:45,173 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 11:17:50,103 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:17:50,371 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:17:50,639 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 11:17:50,913 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 11:17:51,190 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 11:17:51,464 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 11:17:51,743 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 11:17:52,023 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 11:21:09,736 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:21:10,194 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:21:10,645 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 11:21:11,110 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 11:21:11,565 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 11:21:12,024 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 11:21:12,482 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 11:21:12,932 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 11:22:19,469 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:22:19,797 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:22:20,148 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 11:22:20,475 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 11:22:20,809 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 11:22:21,157 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 11:22:21,489 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 11:22:21,823 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 11:23:23,427 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:23:23,750 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:23:24,084 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 11:23:24,422 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 11:23:24,745 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 11:23:25,068 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 11:23:25,404 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 11:23:25,733 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 11:24:07,385 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:24:07,859 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:24:08,292 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 11:24:08,753 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 11:24:09,201 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 11:24:09,654 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 11:24:10,100 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 11:24:10,535 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 11:26:42,627 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:26:43,067 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:26:43,532 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 11:26:43,993 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 11:26:44,455 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 11:26:44,898 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 11:26:45,356 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 11:26:45,795 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 11:38:03,813 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:39:43,937 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:39:44,383 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:40:23,333 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:40:23,771 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:42:38,395 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:42:38,837 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:45:03,255 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:45:03,702 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:55:38,309 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:55:38,757 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:57:02,732 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:57:03,182 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 11:58:51,900 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 11:58:52,358 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 12:00:17,786 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 12:00:18,232 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 12:00:59,758 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 12:01:00,214 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 12:02:40,218 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 12:02:40,665 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 12:03:38,536 - INFO - Completed 0 - __main__
+2022-12-24 12:03:39,106 - INFO - Completed 1 - __main__
+2022-12-24 12:03:39,653 - INFO - Completed 2 - __main__
+2022-12-24 12:03:40,200 - INFO - Completed 3 - __main__
+2022-12-24 12:03:40,747 - INFO - Completed 4 - __main__
+2022-12-24 12:03:41,307 - INFO - Completed 5 - __main__
+2022-12-24 12:03:41,893 - INFO - Completed 6 - __main__
+2022-12-24 12:03:42,451 - INFO - Completed 7 - __main__
+2022-12-24 12:03:42,874 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 12:03:43,300 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 12:12:53,398 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 12:12:53,843 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 18:05:05,015 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 18:05:05,465 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 18:06:51,748 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 18:06:52,190 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 18:07:39,956 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 18:07:40,414 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 18:08:11,957 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 18:08:12,404 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 18:34:18,534 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 18:34:18,827 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 18:34:38,154 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 18:34:38,598 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 19:08:35,811 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 19:08:36,105 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 19:08:49,802 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 19:08:50,090 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 19:27:01,329 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 19:27:01,628 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 19:42:03,770 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 19:42:04,059 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 19:42:46,915 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 19:42:47,210 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 19:49:25,103 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 19:51:33,152 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 19:52:29,812 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 19:52:44,985 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 19:54:55,723 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 19:56:32,788 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 19:59:47,654 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:00:48,493 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:04:21,681 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:04:49,044 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:05:44,845 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:06:08,953 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:06:58,793 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:07:13,236 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:16:56,607 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:17:20,832 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:21:05,300 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:23:14,788 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:23:57,595 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:24:08,447 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:24:27,231 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:25:42,527 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:27:49,015 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:30:18,139 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:30:18,424 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:34:04,930 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:34:05,232 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:34:05,532 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 20:34:05,839 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 20:34:06,130 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 20:34:06,434 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 20:34:06,720 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 20:34:07,003 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 20:49:13,010 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:49:13,295 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:49:13,581 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 20:49:13,870 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 20:49:14,174 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 20:49:14,471 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 20:49:14,762 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 20:49:15,052 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 20:49:30,291 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:49:30,583 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:49:30,875 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 20:49:31,168 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 20:49:31,469 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 20:49:31,755 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 20:49:32,047 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 20:49:32,339 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 20:50:36,174 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:50:36,461 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:50:36,745 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 20:50:37,030 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 20:50:37,323 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 20:50:37,610 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 20:50:37,895 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 20:50:38,181 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 20:51:26,901 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:51:27,193 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:51:27,495 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 20:51:27,781 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 20:51:28,068 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 20:51:28,358 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 20:51:28,644 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 20:51:28,930 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 20:52:01,316 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:52:01,602 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:52:01,890 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 20:52:02,180 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 20:52:02,470 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 20:52:02,757 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 20:52:03,044 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 20:52:03,342 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 20:52:29,114 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:52:29,421 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:52:29,713 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 20:52:30,001 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 20:52:30,291 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 20:52:30,582 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 20:52:30,872 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 20:52:31,164 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 20:53:00,312 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 20:53:00,616 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 20:53:00,908 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 20:53:01,212 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 20:53:01,502 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 20:53:01,786 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 20:53:02,092 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 20:53:02,394 - INFO - Completed stone parsing page page_8.png - __main__
+2022-12-24 21:00:54,673 - INFO - Completed stone parsing page page_1.png - __main__
+2022-12-24 21:00:54,960 - INFO - Completed stone parsing page page_2.png - __main__
+2022-12-24 21:00:55,261 - INFO - Completed stone parsing page page_3.png - __main__
+2022-12-24 21:00:55,549 - INFO - Completed stone parsing page page_4.png - __main__
+2022-12-24 21:00:55,838 - INFO - Completed stone parsing page page_5.png - __main__
+2022-12-24 21:00:56,141 - INFO - Completed stone parsing page page_6.png - __main__
+2022-12-24 21:00:56,425 - INFO - Completed stone parsing page page_7.png - __main__
+2022-12-24 21:00:56,718 - INFO - Completed stone parsing page page_8.png - __main__
