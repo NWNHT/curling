@@ -93,6 +93,7 @@ class DBConn:
 			self.cursor.execute(command, arguments)
 		if commit: self.commit()
 
+
 	def execute_many(self, command: str, arguments: List[tuple], commit: bool=True):
 		"""
 		Execute many arbitrary commands

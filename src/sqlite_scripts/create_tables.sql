@@ -12,7 +12,7 @@ CREATE TABLE Event (
 -- Include time control? Include a final score?
 CREATE TABLE Match (
     match_id INTEGER NOT NULL PRIMARY KEY,
-    date TEXT,
+    start_time TEXT,
     type TEXT,
     sheet TEXT,
     team_1 TEXT,
@@ -28,6 +28,7 @@ CREATE TABLE End (
     end_id INTEGER NOT NULL PRIMARY KEY,
     num INTEGER NOT NULL,
     hammer_colour TEXT,
+    direction TEXT,
 
     -- Red
     team_1_final_score INTEGER,
@@ -42,7 +43,9 @@ CREATE TABLE Player (
     player_id INTEGER NOT NULL PRIMARY KEY,
     name TEXT,
     sex TEXT,
-    nationality TEXT
+    team TEXT,
+
+    UNIQUE (name, sex, team)
 );
 
 CREATE TABLE Position (
@@ -66,16 +69,12 @@ CREATE TABLE Stone (
 
 CREATE TABLE Throw (
     throw_id INTEGER NOT NULL PRIMARY KEY,
-    num INTEGER,
+    throw_num INTEGER NOT NULL,
     colour TEXT,
     
     player_id INTEGER,
     end_id INTEGER,
-    pos_before INTEGER,
-    pos_after INTEGER,
 
     FOREIGN KEY(player_id)  REFERENCES Player(player_id),
-    FOREIGN KEY(end_id)     REFERENCES End(end_id),
-    FOREIGN KEY(pos_before) REFERENCES Position(position_id),
-    FOREIGN KEY(pos_after)  REFERENCES Position(position_id)
+    FOREIGN KEY(end_id)     REFERENCES End(end_id)
 );

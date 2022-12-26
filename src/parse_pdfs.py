@@ -1,4 +1,5 @@
 
+import datetime
 import logging
 from os import mkdir, listdir, system, remove
 from os.path import isdir, isfile, join
@@ -20,6 +21,7 @@ from pdfminer.layout import LTLine, LTCurve
 
 import fitz
 
+import dateparser
 import numpy as np
 import pandas as pd
 import plotnine as gg
@@ -54,23 +56,25 @@ logger.addHandler(s_handler)
 def main():
 
     # --- Create/connect to database ---
-    # db = CurlingDB()
-    # db.drop_tables()
-    # db.create_tables()
+    db = CurlingDB()
+    db.drop_tables()
+    db.create_tables()
 
 
-    pdf_dir = join(base_directory, 'src', 'sample_pdfs')
+    # pdf_dir = join(base_directory, 'src', 'sample_pdfs')
+    # pdf_dir = join(base_directory, 'src', 'tourney_sample_pdfs')
+    pdf_dir = join(base_directory, 'src', 'small_tourney_sample_pdfs')
     temp_dir = join(base_directory, 'src', 'temp')
 
-    tournaments = {x.split('-')[0]: x for x in listdir(pdf_dir)}
+    tournaments = {x.split('-')[0]: x for x in listdir(pdf_dir) if x.endswith('pdf')}
+    logger.info(f"Looping for tournaments {tournaments.keys()}")
 
     for tournament in tournaments.keys():
         tournament_name = ''
-        tournament_start_date = ''
-        tournament_end_date = ''
-        tournament_location = ''
 
         pdfs = [pdf for pdf in listdir(pdf_dir) if (pdf.startswith(tournament)) and (pdf.endswith('pdf'))]
+        logger.info(f"Found {len(pdfs)} pdfs for tournament {tournament}.")
+        tournament_info = []
         for pdf in pdfs:
             # --- Steps ---
             # Take a pdf file 
@@ -79,10 +83,14 @@ def main():
             # Convert the pdf to images for stone parsing - complete
             # Parse the xml for text - complete
             # Parse the images for the stone locations - complete
-            # Delete the xml and images - can do, TODO
+            # Delete the xml and images - complete
             # Enter into database - TODO
             
             logger.info(f"Beginning pdf: {pdf}")
+
+            # -- Take team name info from pdf title --
+            team1, team2 = [name.split('.')[0] for name in pdf.split('-')[-2:]]
+            game_type = pdf.split('-')[1]
             
             # -- Convert pdf to xml --
             pdf = pdf.replace(r"'", r"\'").strip()
@@ -98,6 +106,9 @@ def main():
 
             # -- Parse xml --
             tourney_info, doc_info, page_df, shot_df = parse_text(xml, temp_dir=temp_dir)
+
+            if tournament_name == '':
+                tournament_name = tourney_info
 
             # -- Parse images --
             image_files = [img_ for img_ in listdir(temp_dir) if img_.startswith('page')]
@@ -117,14 +128,223 @@ def main():
                 remove(join(temp_dir, temp_file))
             
             print('\n\n')
+            tournament_info.append((tournament, game_type, team1, team2, doc_info, page_df, shot_df, all_stones, hammers, dir_of_play_list))
+        
+        # --- Organize Data ---
+        # doc_info: (start_time, sheet, team_1_score_final, team_2_score_final)
+        # page_df: (end_number, team_1_score, team_2_score)
+        # shot_df: (end_number, x_ind, y_ind, player, throw_num, throw_type, throw_rating, throw_turn)
+        # stones_df: end, frame_x, frame_y, stone_colour, x, y
+        # hammers: list of 'red' or 'yellow' representing the hammer for each end in a document
+        # dir_of_play_down_list: list of bools representing if the play direction was down
+
+        # list(data_set.itertuples(index=False, name=None))
+        # Event Entry
+
+        tournament_dates = [x.date() for x in [pdf[4][0] for pdf in tournament_info] if (x is not None) and (not isinstance(x, str))]
+        tournament_start_date = min(tournament_dates)
+        tournament_end_date = max(tournament_dates)
+        event_data = (tournament_name, tournament, tournament_start_date, tournament_end_date, '')
+        print(event_data)
+
+        # # Match Entries
+        # matches = []
+        # for match in tournament_info:
+        #     # Tournament abbrev, start_time, game type, sheet, team1, team1score, team2, team2score
+        #     matches.append((match[0], match[4][0], match[1], match[4][1], match[2], match[4][3], match[3], match[4][4]))
+        
+        # matches_df = pd.DataFrame(matches)
+        # print(matches_df)
+
+        # # End Entries
+        # # tournament, team_1, team_2, date, end_num, hammer_colour, team_1_score, team_2_score
+        # ends = []
+        # for match in tournament_info:
+        #     for page, hammer, direction in zip(match[5], match[8], [9]):
+        #         # For each end, make a tuple that contains end info, then all throws, then all stones
+        #         # end_num, hammer, direction, team1score, team2score 
+        #         ends.append((page[0], hammer, 'down' if direction else 'up', page[1], page[2]))
+
+        # Then I create an event, save the event_id
+        # Then I create a match, save the match_id
+        # Then I create an end, save the end_id
+        # Then I loop through all of the stones/positions and make those
+        # Then I loop through all throws and create those
+        
+
+        tournament_cmd = """
+        INSERT OR IGNORE INTO Event (name, abbrev, start_date, end_date, location)
+                             VALUES (?, ?, ?, ?, ?)"""
+        db.execute_command(tournament_cmd, event_data)
+        tournament_id = db.cursor.lastrowid
+        print(f"The tourn_id is: {tournament_id}")
+
+        for match in tournament_info:
+            # Tournament abbrev, start_time, game type, sheet, team1, team1score, team2, team2score
+            match_data = (match[4][0], match[1], match[4][1], match[2], int(match[4][2]), match[3], int(match[4][3]), tournament_id)
+            match_cmd = """
+            INSERT OR IGNORE INTO Match (start_time, type, sheet, team_1, team_1_final_score, team_2, team_2_final_score, event_id)
+                                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)"""
+            db.execute_command(match_cmd, match_data)
+            match_id = db.cursor.lastrowid
+            print(f"\tThe match_id is: {match_id}")
+
+            if match[1] == 'Mens_Teams':
+                sex = 'm'
+            elif match[1] == 'Womens_Teams':
+                sex = 'f'
+            else:
+                sex = 'u' # Unknown
+
+            end_df = match[5]
+            end_df['hammer'] = match[8]
+            end_df['direction'] = match[9]
+
+            shot_df: pd.DataFrame = match[6]
+            shot_df = shot_df.sort_values(by=['ind_y', 'ind_x']).reset_index(drop=True)
+
+            stones_df = match[7]
+
+            for _, row in end_df.iterrows():
+                end_num = row['end_number']
+                end_data = (end_num, row['hammer'], 'down' if row['direction'] else 'up', row['team_1_score'], row['team_2_score'], match_id)
+                end_cmd = """
+                INSERT OR IGNORE INTO End (num, hammer_colour, direction, team_1_final_score, team_2_final_score, match_id)
+                                   VALUES (?, ?, ?, ?, ?, ?)"""
+                db.execute_command(end_cmd, end_data)
+                end_id = db.cursor.lastrowid
+                print(f"\t\tThe end_id is: {end_id}")
+
+                # Add all of the throws
+                for index, shot_row in (shot_df.query('end_number == @end_num')
+                                               .sort_values(by=['ind_y', 'ind_x'])
+                                               .reset_index(drop=True)
+                                               .iterrows()):
+                    print(f"\t\t\tFrame: {shot_row['ind_x']} {shot_row['ind_y']}")
+
+                    # Create the player entry
+                    # If the player name and nationality already exists in the database, use that id
+                    # - If sex in m/f then check if the player has a sex in the database, if not then set it
+                    # If no entry then make an entry, if sex in m/f then insert that
+
+                    player_team, player_name = [x.strip() for x in shot_row['player'].split(':')]
+                    player_data = (player_name, player_team)
+                    player_query = """
+                    SELECT player_id, sex
+                    FROM Player
+                    WHERE name = ?
+                      AND team = ?"""
+                    db.execute_query(player_query, player_data)
+
+                    if db.cursor.rowcount > 0:
+                        # There is already a player
+                        result = db.cursor.fetchone()
+                        print(result)
+                        # If the player has no sex but we do know it
+                        if (result[1] == 'u') and (sex != 'u'):
+                            logger.debug(f"There is a player {player_name} but no sex, we now know it.")
+                            player_update_cmd = """
+                            UPDATE Player
+                            SET sex = ?
+                            WHERE player_id = ?"""
+                            db.execute_command(player_update_cmd, (sex, result[0]))
+                        else:
+                            logger.debug(f"There is a player {player_name} but no sex, we still don't know it.")
+                    else:
+                        # There is no player, add
+                        logger.debug(f"There is no player {player_name}, we know the sex.")
+                        player_add_cmd = """
+                        INSERT OR IGNORE INTO Player (name, sex, team)
+                                            VALUES (?, ?, ?)"""
+                        db.execute_command(player_add_cmd, (player_name, sex, player_team))
+                    
+                    # By here, there should be a player that can be found in the next query
+
+                    # If not
+                    throw_data = (index + 1, 'colour', player_name, player_team, end_id)
+                    throw_cmd = """
+                    INSERT OR IGNORE INTO Throw (throw_num, colour, player_id, end_id)
+                                         VALUES (?, ?, (SELECT player_id
+                                                        FROM Player
+                                                        WHERE name=?
+                                                          AND team=?), ?)"""
+                    db.execute_command(throw_cmd, throw_data)
+                
+                stones_df_end = stones_df.query('end == @end_num')
+                
+                # For each unique combination of frame_x and frame_y, sorted by y then x
+                frames = sorted(stones_df_end.groupby(['frame_y', 'frame_x']).size().index)
+                print(frames)
+                print(type(frames))
+                print(type(frames[0]))
+                for i, (y, x) in enumerate(frames):
+                    # Filter to only stones in the frame
+                    stones_df_end_frame = stones_df_end.query('(frame_y == @y) & (frame_x == @x)')
+
+                    position_data = (i, end_id)
+                    position_cmd = """
+                    INSERT OR IGNORE INTO Position (frame_num, end_id)
+                                            VALUES (?, ?)"""
+                    db.execute_command(position_cmd, position_data)
+                    position_id = db.cursor.lastrowid
+
+                    stone_cmd = """
+                    INSERT OR IGNORE INTO Stone (colour, x, y, position_id)
+                                         VALUES (?, ?, ?, ?)"""
+                    for _, stone_row in stones_df_end_frame.iterrows():
+                        stone_data = (stone_row['stone_colour'], stone_row['x'], stone_row['y'], position_id)
+                        db.execute_command(stone_cmd, stone_data, commit=False)
+                db.commit()
+                        
+                    
+                
+                
+                
+
+
+                
+
+
+                
+                
             
             
+        # Execute Tournament insert query, save tournament_id
+
+        # For match in tournament_info
+        #   Execute Match insert query, save match_id
+
+        #   For End in match
+        #       Execute End insert query, save end_id
+
+        #       For Throw in Throws
+        #           Insert or Ignore player
+        #           Executemany throws
+
+        #       For Position/Frame in End
+        #           Execute Position insert query, save position_id
+        #           For Stone in Stones
+        #               Executemany stone insert query
+        
+        
+
+        
+
+        
+        
+
             
-
-
-
-
         # --- Make SQL commands
+
+        # Make the tournament/event
+        # - name from tourney info, abbrev from loop index, start date and end date from parsing all of the event pdfs, leave location blank
+
+        # For each pdf, make a match
+        
+        
+        
+        
+        pass
         
 
     # doc = 'CUR_1819_CWC_4P-Men\'s_Teams-03~Session_3-NOR-SCO.pdf'
@@ -138,20 +358,20 @@ def main():
 
     # --- Stone Detection ---
     # In production this will run from 1 to the length of the pdf
-    stones = pd.concat([get_stone_positions(filename=join(base_directory, 'src', 'sample_images', f'page_{page_num}.png'), end_num=page_num)[0] for page_num in range(1, 9)])
+    # stones = pd.concat([get_stone_positions(filename=join(base_directory, 'src', 'sample_images', f'page_{page_num}.png'), end_num=page_num)[0] for page_num in range(1, 9)])
     # stones, hammer = get_stone_positions(filename=join(base_directory, 'src', 'sample_images', f'page_{1}.png'), end_num=1)
     # stones2, hammer = get_stone_positions(filename=join(base_directory, 'src', 'sample_images', f'page_{2}.png'), end_num=2)
     # stones = pd.concat([stones, stones2])
-    print(len(stones.query('(abs(x) > 308) | (y > 866) | (y < -248)')))
-    g = (gg.ggplot(stones, gg.aes(x='x', y='y', colour='factor(stone_colour)')) 
-         + gg.geom_point(size=4)
-         + gg.facet_grid('. ~ end')
-         + gg.scale_color_manual(values=['red', 'yellow'])
-         + gg.xlim((-308, 308))
-         + gg.ylim((-248, 866))
-         + gg.theme(figure_size=(6 * max(stones['end']), 9))
-         )
-    print(g)
+    # print(len(stones.query('(abs(x) > 308) | (y > 866) | (y < -248)')))
+    # g = (gg.ggplot(stones, gg.aes(x='x', y='y', colour='factor(stone_colour)')) 
+    #      + gg.geom_point(size=4)
+    #      + gg.facet_grid('. ~ end')
+    #      + gg.scale_color_manual(values=['red', 'yellow'])
+    #      + gg.xlim((-308, 308))
+    #      + gg.ylim((-248, 866))
+    #      + gg.theme(figure_size=(6 * max(stones['end']), 9))
+    #      )
+    # print(g)
 
     # print(stones.shape)
     # print(stones.info())
@@ -238,22 +458,48 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
         if stone_colour == 'red':
 
             # Complicated parsing to narrow down to the small stones in the third cell
+            # Third frame
+            # small_stones = [con for con in contours if (len(con) < 40) 
+            #                                        and (len(con) > 15)
+            #                                        and (con[0][0][1] > 1200)
+            #                                        and (con[0][0][1] < 2650)
+            #                                        and (con[0][0][0] > 1600)
+            #                                        and (con[0][0][0] < 2400)]
+            # stone_num = len(small_stones)
+            # Are these numbers correct?
+            # if any(stone_num == x for x in [4, 6]):
+            #     hammer = 'red'
+            # elif any(stone_num == x for x in [5, 7]):
+            #     hammer = 'yellow'
+            # else:
+            #     hammer = 'incon'
+            
+
+            # First frame
             small_stones = [con for con in contours if (len(con) < 40) 
                                                    and (len(con) > 15)
                                                    and (con[0][0][1] > 1200)
                                                    and (con[0][0][1] < 2650)
-                                                   and (con[0][0][0] > 1600)
-                                                   and (con[0][0][0] < 2400)]
+                                                   and (con[0][0][0] > 280)
+                                                   and (con[0][0][0] < 920)]
+
             stone_num = len(small_stones)
-            if any(stone_num == x for x in [4, 6]):
+            if any(stone_num == x for x in [5, 8]):
                 hammer = 'red'
-            elif any(stone_num == x for x in [5, 7]):
+            elif any(stone_num == x for x in [4, 7]):
                 hammer = 'yellow'
             else:
                 hammer = 'incon'
             
             # Use the location of the small stones to identify the direciton of play
-            dir_of_play_down: bool = small_stones[0][0][0][1] < 1925
+            try:
+                dir_of_play_down: bool = small_stones[0][0][0][1] < 1925
+            except:
+                logger.error(end_num)
+                logger.error(hammer)
+                logger.error(small_stones)
+
+                quit()
 
         # For enumerated contours, if contour centre is inside only one bounding box, then add it to good list
         valid_con = []
@@ -327,6 +573,7 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
     logger.info(f"Completed stone parsing page {filename.split('/')[-1]}")
     return pd.DataFrame(parsed_stones, columns=['end', 'frame_x', 'frame_y', 'stone_colour', 'x', 'y']), hammer, dir_of_play_down
 
+
     
 def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.DataFrame]:
 
@@ -348,7 +595,7 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
     # TODO: This is where I can find the tournament and session information        
     # Initialize the per-document fields, some of them might not parse correctly
     start_time = ''
-    date = ''
+    date = None
     sheet = ''
     title = ''
     header_parse = []
@@ -367,11 +614,16 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                 item_left = int(item.attrib['left'])
                 
                 # -- Parse for Shots --
+                # TODO: There is also a 'Shoot-out' option which is just a closest to the centre
                 if ('Prepositioned Stones' in item.text):
                     pass
                 if (': ' in item.text):
                     # These are all of the shots
-                    shot_info.append([page_num, item_top, item_left])
+                    # shot_info.append([page_num, item_top, item_left])
+                    # Find the shot index
+                    ind_x = ((item_left - 50) // 130) + 1
+                    ind_y = (item_top - 480) // 250
+                    shot_info.append([page_num, ind_x, ind_y])
                     player = throw_num = throw_type = throw_rating = throw_turn =  None
                     for element in page.findall('text'):
                         # For each element, check if it is in the zone of the name label
@@ -399,12 +651,17 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                     shot_info[-1].extend([player, throw_num, throw_type, throw_rating, throw_turn])
                 
                 # -- Parse for End Score --
-                # Apparently the added number can also take the value of X
                 # This is for the more common string case
+                # TODO: Apparently the resulting number can be W/L, should just take score of previous end
                 if ('=' in item.text) and (abs(item_top - 225) < 5):
-                    banner_parse.append((int(item.attrib['top']), int(item.attrib['left']), int(item.text.split()[-1].strip(' ='))))
+                    score_tuple = (int(item.attrib['top']), int(item.attrib['left']), item.text.split()[-1].strip(' ='))
+                    # If either of the parsed scores are W/L then it will go with the 99-99 option which indicates error parsing
+                    # TODO: In the future with some testing this could take the previous scores with team_1_score and team_2_score
+                    if not any(x in score_tuple[2] for x in ['W', 'L']):
+                        banner_parse.append((score_tuple[0], score_tuple[1], int(score_tuple[2])))
                 
                 # Less common split case
+                # TODO: Apparently the added number can also take the value of X
                 if (abs(item_top - 225 < 5)) and (len(item.text.strip()) < 3) and (len(item.text.strip()) > 0) and all(x not in item.text for x in ['+', '-', 'X']):
                     if item.text.strip() == 'X':
                         banner_parse.append((int(item.attrib['top']), int(item.attrib['left']), 0))
@@ -416,10 +673,12 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                 if int(page.attrib['number']) == 1:
                     # Check for the start time
                     if 'Start Time' in item.text:
-                        start_time = item.text.strip().split()[-1]
+                        start_hour, start_minutes = item.text.strip().split()[-1].split(':')
+                        start_time = datetime.timedelta(hours=int(start_hour), minutes=int(start_minutes))
+
                     # Check for the date
                     if (len(item.text.strip().split()) == 4) and (item_top > date_box['top']) and (item_top < date_box['bottom']) and (item_left < date_box['right']):
-                        date = item.text.strip()
+                        date = dateparser.parse(item.text.strip())
                     # Check for a sheet label
                     if (item_top < 200) and ('Sheet' in item.text):
                         sheet = sheet_pattern.findall(item.text)[0]
@@ -427,6 +686,8 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                     # Check for the rest of the headers
                     if (item_top < headers_box['bottom']):
                         header_parse.append(item.text)
+                
+                # -- Parse Team Names --
                         
         # -- Page Parsing --
         # Each page will have either 
@@ -455,11 +716,21 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
         elif i == 'Curling':
             title 
     
-    tourney_info = title
-    doc_info = (date, start_time, sheet)
-
     page_df = pd.DataFrame(page_info, columns=['end_number', 'team_1_score', 'team_2_score'])
-    shot_df = pd.DataFrame(shot_info, columns=['end_number', 'top', 'left', 'player', 'throw_num', 'throw_type', 'throw_rating', 'throw_turn'])
+    shot_df = pd.DataFrame(shot_info, columns=['end_number', 'ind_x', 'ind_y', 'player', 'throw_num', 'throw_type', 'throw_rating', 'throw_turn'])
+
+    # Parse the final score of the match
+    team_1_final_score = page_df['team_1_score'].max()
+    team_2_final_score = page_df['team_2_score'].max()
+
+    if isinstance(date, datetime.datetime) and isinstance(start_time, datetime.timedelta):
+        start_time = date + start_time
+    elif isinstance(date):
+        logger.warning(f"No start time found.")
+        start_time = date
+
+    tourney_info = title
+    doc_info = (start_time, sheet, team_1_final_score, team_2_final_score)
 
     return tourney_info, doc_info, page_df, shot_df
                     
