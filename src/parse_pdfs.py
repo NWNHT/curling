@@ -57,22 +57,45 @@ def main():
 
     # --- Create/connect to database ---
     db = CurlingDB()
-    db.drop_tables()
-    db.create_tables()
+    
+    parsed_tournaments_file = 'parsed_tournaments.txt'
+    parsed_tournaments_path = join(base_directory, 'src', parsed_tournaments_file)
+    reset = True # If true this will reset the database and delete the parse_tournament document
+    if reset:
+        logger.info(f"Reseting database and parsed tournament file.")
+        db.drop_tables()
+        db.create_tables()
+        remove(parsed_tournaments_path)
     
     # Conversion
     pixel_to_m = 0.007370759
 
     # pdf_dir = join(base_directory, 'src', 'sample_pdfs')
-    pdf_dir = join(base_directory, 'src', 'tourney_sample_pdfs')
+    # pdf_dir = join(base_directory, 'src', 'tourney_sample_pdfs')
     # pdf_dir = join(base_directory, 'src', 'small_tourney_sample_pdfs')
     # pdf_dir = join(base_directory, 'src', 'alt_sample_pdfs')
+    pdf_dir = join(base_directory, 'shots')
     temp_dir = join(base_directory, 'src', 'temp')
+    
 
-    tournaments = {x.split('-')[0]: x for x in listdir(pdf_dir) if x.endswith('pdf')}
-    logger.info(f"Looping for tournaments {tournaments.keys()}")
+    # Find all tournaments in directory
+    tournaments = {x.split('-')[0]: x for x in listdir(pdf_dir) if x.endswith('pdf')}.keys()
 
-    for tournament in tournaments.keys():
+    # Find all tournaments already parsed
+    if isfile(parsed_tournaments_path):
+        logger.info(f"Parsed file already exists.")
+        with open(parsed_tournaments_path, 'r') as fh:
+            parsed_tournaments = [x.strip() for x in fh.readlines()]
+        # Find all tournaments in pdf dir and not already parsed
+        tournaments = list(set(tournaments).symmetric_difference(set(parsed_tournaments)))
+    else:
+        # Make an empty file
+        logger.info(f"Parsed file does not exist, creating.")
+        open(parsed_tournaments_path, 'w+')
+    
+    logger.info(f"Looping for tournaments {tournaments}")
+
+    for tournament in tournaments:
         tournament_name = ''
 
         pdfs = [pdf for pdf in listdir(pdf_dir) if (pdf.startswith(tournament)) and (pdf.endswith('pdf'))]
@@ -87,7 +110,7 @@ def main():
             # Parse the xml for text - complete
             # Parse the images for the stone locations - complete
             # Delete the xml and images - complete
-            # Enter into database - TODO
+            # Enter into database - complete
             
             logger.info(f"Beginning pdf: {pdf}")
 
@@ -141,13 +164,14 @@ def main():
         # hammers: list of 'red' or 'yellow' representing the hammer for each end in a document
         # dir_of_play_down_list: list of bools representing if the play direction was down
 
+        # Pass the db, tournament info, 
 
         tournament_dates = [x.date() for x in [pdf[4][0] for pdf in tournament_info] if (x is not None) and (not isinstance(x, str))]
         tournament_start_date = min(tournament_dates)
         tournament_end_date = max(tournament_dates)
         event_data = (tournament_name, tournament, tournament_start_date, tournament_end_date, '')
 
-
+        # Entry for the tournament/event
         tournament_cmd = """
         INSERT OR IGNORE INTO Event (name, abbrev, start_date, end_date, location)
                              VALUES (?, ?, ?, ?, ?)"""
@@ -156,6 +180,7 @@ def main():
         logger.debug(f"The tourn_id is: {tournament_id}")
 
         for match in tournament_info:
+            # Entry for the match
             # Tournament abbrev, start_time, game type, sheet, team1, team1score, team2, team2score
             match_data = (match[4][0], match[1], match[4][1], match[2], int(match[4][2]), match[3], int(match[4][3]), tournament_id)
             match_cmd = """
@@ -165,6 +190,7 @@ def main():
             match_id = db.cursor.lastrowid
             logger.debug(f"\tThe match_id is: {match_id}")
 
+            # Set the sex of the match for later use
             if match[1] == 'Mens_Teams':
                 sex = 'm'
             elif match[1] == 'Womens_Teams':
@@ -172,6 +198,7 @@ def main():
             else:
                 sex = 'u' # Unknown
 
+            # Condition the dataframes for the ends, shots, and stone entries
             end_df = match[5]
             end_df['hammer'] = match[8]
             end_df['direction'] = match[9]
@@ -181,7 +208,9 @@ def main():
 
             stones_df = match[7]
 
+            # For each end from the match
             for _, row in end_df.iterrows():
+                # Make the end entry
                 end_num = row['end_number']
                 end_data = (end_num, row['hammer'], 'down' if row['direction'] else 'up', row['team_1_score'], row['team_2_score'], match_id)
                 end_cmd = """
@@ -269,7 +298,7 @@ def main():
                     # Set offset
                     frame_offset = 1
                 else:
-                    # For the other cases there is a starting position
+                    # For the other cases there is already a starting position
                     frame_offset = 0
 
                 for i, (y, x) in enumerate(frames):
@@ -294,115 +323,13 @@ def main():
                         db.execute_command(stone_cmd, stone_data, commit=False)
                     db.commit()
                         
-                    
-                
-                
-                
-
-
+        # Note that the tournament has been parsed
+        with open(parsed_tournaments_path, 'a') as fh:
+            fh.write(tournament + '\n')
+                                
                 
 
-
                 
-                
-            
-            
-        # Execute Tournament insert query, save tournament_id
-
-        # For match in tournament_info
-        #   Execute Match insert query, save match_id
-
-        #   For End in match
-        #       Execute End insert query, save end_id
-
-        #       For Throw in Throws
-        #           Insert or Ignore player
-        #           Executemany throws
-
-        #       For Position/Frame in End
-        #           Execute Position insert query, save position_id
-        #           For Stone in Stones
-        #               Executemany stone insert query
-        
-        
-
-        
-
-        
-        
-
-            
-        # --- Make SQL commands
-
-        # Make the tournament/event
-        # - name from tourney info, abbrev from loop index, start date and end date from parsing all of the event pdfs, leave location blank
-
-        # For each pdf, make a match
-        
-        
-        
-        
-        pass
-        
-
-    # doc = 'CUR_1819_CWC_4P-Men\'s_Teams-03~Session_3-NOR-SCO.pdf'
-    # doc = 'CUR_1819_CWC_4P-Men\'s_Teams-03~Session_3-NOR-SCO.xml'
-    # doc = 'CU_WMCC2016P-Men\'s_Teams-01~Session_1-GER-SUI.pdf'
-    # pdf_to_img(doc, 8)
-    # quit()
-
-    # xmls = [x for x in listdir(join(base_directory, 'src', 'sample_xmls')) if x.endswith('.xml')]
-
-
-    # --- Stone Detection ---
-    # In production this will run from 1 to the length of the pdf
-    # stones = pd.concat([get_stone_positions(filename=join(base_directory, 'src', 'sample_images', f'page_{page_num}.png'), end_num=page_num)[0] for page_num in range(1, 9)])
-    # stones, hammer = get_stone_positions(filename=join(base_directory, 'src', 'sample_images', f'page_{1}.png'), end_num=1)
-    # stones2, hammer = get_stone_positions(filename=join(base_directory, 'src', 'sample_images', f'page_{2}.png'), end_num=2)
-    # stones = pd.concat([stones, stones2])
-    # print(len(stones.query('(abs(x) > 308) | (y > 866) | (y < -248)')))
-    # g = (gg.ggplot(stones, gg.aes(x='x', y='y', colour='factor(stone_colour)')) 
-    #      + gg.geom_point(size=4)
-    #      + gg.facet_grid('. ~ end')
-    #      + gg.scale_color_manual(values=['red', 'yellow'])
-    #      + gg.xlim((-308, 308))
-    #      + gg.ylim((-248, 866))
-    #      + gg.theme(figure_size=(6 * max(stones['end']), 9))
-    #      )
-    # print(g)
-
-    # print(stones.shape)
-    # print(stones.info())
-    # print(stones.describe())
-
-    # g = gg.ggplot(stones, gg.aes(x='x', y='-y', colour='factor(stone_colour)')) + gg.geom_point(alpha=0.2) + gg.scale_y_continuous(breaks=lambda x: list(range(int(x[0]), int(x[1]), 200))) + gg.scale_x_continuous(breaks=lambda x: list(range(int(x[0]), int(x[1]), 100)))
-    # print(g)
-
-    # --- Text Parsing ---
-    # title, doc_info, page_df, shot_df = parse_text(join(base_directory, 'src', 'sample_xmls', list(tournaments.values())[1]))
-    # print(title)
-    # print(doc_info)
-    # print(page_df)
-    # print(shot_df.info())
-
-    # --- Steps ---
-    # Take a pdf file 
-    # Convert the pdf to xml for text parsing - complete
-    # Run the xml through the span cleaning - complete
-    # Convert the pdf to images for stone parsing - complete
-    # Parse the xml for text - complete
-    # Parse the images for the stone locations - complete
-    # Delete the xml and images - can do, TODO
-    # Enter into database - TODO
-    
-    
-
-    
-    # cv2.destroyAllWindows()
-    
-    
-    # Profit?
-
 def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str, bool]:
     """Take a full path to a file and return a dataframe with the stone positions.
 
@@ -449,29 +376,8 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
 
         # -- Find the absolute locations of all of the stones --
 
-        # Check for the hammer, checks the third cell
-        # - Can't use the first cell as it may be prepositioned stones for mixed doubles
-        # - Can't check the first stone to appear in the play space because someone might miss the first throw
-        # - Instead counts the tiny stones in the third cell
+        # Check for the hammer, checks the first cell
         if stone_colour == 'red':
-
-            # Complicated parsing to narrow down to the small stones in the third cell
-            # Third frame
-            # small_stones = [con for con in contours if (len(con) < 40) 
-            #                                        and (len(con) > 15)
-            #                                        and (con[0][0][1] > 1200)
-            #                                        and (con[0][0][1] < 2650)
-            #                                        and (con[0][0][0] > 1600)
-            #                                        and (con[0][0][0] < 2400)]
-            # stone_num = len(small_stones)
-            # Are these numbers correct?
-            # if any(stone_num == x for x in [4, 6]):
-            #     hammer = 'red'
-            # elif any(stone_num == x for x in [5, 7]):
-            #     hammer = 'yellow'
-            # else:
-            #     hammer = 'incon'
-            
 
             # First frame
             small_stones = [con for con in contours if (len(con) < 40) 
@@ -481,6 +387,7 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
                                                    and (con[0][0][0] > 280)
                                                    and (con[0][0][0] < 920)]
 
+            # Count the number of 'small' stones to determine the hammer
             stone_num = len(small_stones)
             if any(stone_num == x for x in [5, 8]):
                 hammer = 'red'
@@ -493,6 +400,7 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
             try:
                 dir_of_play_down: bool = small_stones[0][0][0][1] < 1925
             except:
+                logger.error(f"Can't find the direction of play by counting the small stones.")
                 logger.error(end_num)
                 logger.error(hammer)
                 logger.error(small_stones)
@@ -571,7 +479,6 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
     logger.info(f"Completed stone parsing page {filename.split('/')[-1]}")
     return pd.DataFrame(parsed_stones, columns=['end', 'frame_x', 'frame_y', 'stone_colour', 'x', 'y']), hammer, dir_of_play_down
 
-
     
 def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.DataFrame]:
 
@@ -590,7 +497,6 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
     # Get the root of the xml file
     root = et.parse(join(temp_dir, filename)).getroot()
 
-    # TODO: This is where I can find the tournament and session information        
     # Initialize the per-document fields, some of them might not parse correctly
     start_time = ''
     date = None
@@ -618,7 +524,6 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                     pass
                 if (': ' in item.text):
                     # These are all of the shots
-                    # shot_info.append([page_num, item_top, item_left])
                     # Find the shot index
                     ind_x = ((item_left - 50) // 130) + 1
                     ind_y = (item_top - 480) // 250
@@ -696,7 +601,6 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                     if (item_top < headers_box['bottom']):
                         header_parse.append(item.text)
                 
-                # -- Parse Team Names --
                         
         # -- Page Parsing --
         # Each page will have either 

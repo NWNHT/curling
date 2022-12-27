@@ -9,7 +9,7 @@ shots_xml/*
 
 src/temp/*
 
-src/parse_tournaments.txt
+src/parsed_tournaments.txt
 
 src/log.log
 
