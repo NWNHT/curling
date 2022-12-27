@@ -1,11 +1,18 @@
 
 .DS_Store
 
+*.pyc
+
 shots/*
 
 shots_xml/*
 
 src/temp/*
+
+src/parse_tournaments.txt
+
+src/log.log
+
 
 src/sample_pdfs/*
 
@@ -16,6 +23,9 @@ src/sample_images/*
 src/small_tourney_sample_pdfs/*
 
 src/tourney_sample_pdfs/*
+
+src/alt_sample_pdfs/*
+
 
 notes.txt
 

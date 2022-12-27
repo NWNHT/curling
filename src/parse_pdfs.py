@@ -10,9 +10,9 @@ from typing import Optional
 
 import xml.etree.ElementTree as et
 
-from borb.pdf import Document
-from borb.pdf import PDF
-from borb.toolkit import SimpleTextExtraction
+# from borb.pdf import Document
+# from borb.pdf import PDF
+# from borb.toolkit import SimpleTextExtraction
 
 from PyPDF2 import PdfReader
 
@@ -59,11 +59,14 @@ def main():
     db = CurlingDB()
     db.drop_tables()
     db.create_tables()
-
+    
+    # Conversion
+    pixel_to_m = 0.007370759
 
     # pdf_dir = join(base_directory, 'src', 'sample_pdfs')
-    # pdf_dir = join(base_directory, 'src', 'tourney_sample_pdfs')
-    pdf_dir = join(base_directory, 'src', 'small_tourney_sample_pdfs')
+    pdf_dir = join(base_directory, 'src', 'tourney_sample_pdfs')
+    # pdf_dir = join(base_directory, 'src', 'small_tourney_sample_pdfs')
+    # pdf_dir = join(base_directory, 'src', 'alt_sample_pdfs')
     temp_dir = join(base_directory, 'src', 'temp')
 
     tournaments = {x.split('-')[0]: x for x in listdir(pdf_dir) if x.endswith('pdf')}
@@ -138,46 +141,19 @@ def main():
         # hammers: list of 'red' or 'yellow' representing the hammer for each end in a document
         # dir_of_play_down_list: list of bools representing if the play direction was down
 
-        # list(data_set.itertuples(index=False, name=None))
-        # Event Entry
 
         tournament_dates = [x.date() for x in [pdf[4][0] for pdf in tournament_info] if (x is not None) and (not isinstance(x, str))]
         tournament_start_date = min(tournament_dates)
         tournament_end_date = max(tournament_dates)
         event_data = (tournament_name, tournament, tournament_start_date, tournament_end_date, '')
-        print(event_data)
 
-        # # Match Entries
-        # matches = []
-        # for match in tournament_info:
-        #     # Tournament abbrev, start_time, game type, sheet, team1, team1score, team2, team2score
-        #     matches.append((match[0], match[4][0], match[1], match[4][1], match[2], match[4][3], match[3], match[4][4]))
-        
-        # matches_df = pd.DataFrame(matches)
-        # print(matches_df)
-
-        # # End Entries
-        # # tournament, team_1, team_2, date, end_num, hammer_colour, team_1_score, team_2_score
-        # ends = []
-        # for match in tournament_info:
-        #     for page, hammer, direction in zip(match[5], match[8], [9]):
-        #         # For each end, make a tuple that contains end info, then all throws, then all stones
-        #         # end_num, hammer, direction, team1score, team2score 
-        #         ends.append((page[0], hammer, 'down' if direction else 'up', page[1], page[2]))
-
-        # Then I create an event, save the event_id
-        # Then I create a match, save the match_id
-        # Then I create an end, save the end_id
-        # Then I loop through all of the stones/positions and make those
-        # Then I loop through all throws and create those
-        
 
         tournament_cmd = """
         INSERT OR IGNORE INTO Event (name, abbrev, start_date, end_date, location)
                              VALUES (?, ?, ?, ?, ?)"""
         db.execute_command(tournament_cmd, event_data)
         tournament_id = db.cursor.lastrowid
-        print(f"The tourn_id is: {tournament_id}")
+        logger.debug(f"The tourn_id is: {tournament_id}")
 
         for match in tournament_info:
             # Tournament abbrev, start_time, game type, sheet, team1, team1score, team2, team2score
@@ -187,7 +163,7 @@ def main():
                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)"""
             db.execute_command(match_cmd, match_data)
             match_id = db.cursor.lastrowid
-            print(f"\tThe match_id is: {match_id}")
+            logger.debug(f"\tThe match_id is: {match_id}")
 
             if match[1] == 'Mens_Teams':
                 sex = 'm'
@@ -213,14 +189,15 @@ def main():
                                    VALUES (?, ?, ?, ?, ?, ?)"""
                 db.execute_command(end_cmd, end_data)
                 end_id = db.cursor.lastrowid
-                print(f"\t\tThe end_id is: {end_id}")
+                logger.debug(f"\t\tThe end_id is: {end_id}")
 
-                # Add all of the throws
+                # Entries for all of the throws, also handles the players
+                throw_colour = 'red' if row['hammer'] == 'yellow' else 'yellow'
                 for index, shot_row in (shot_df.query('end_number == @end_num')
                                                .sort_values(by=['ind_y', 'ind_x'])
                                                .reset_index(drop=True)
                                                .iterrows()):
-                    print(f"\t\t\tFrame: {shot_row['ind_x']} {shot_row['ind_y']}")
+                    logger.debug(f"\t\t\tFrame: {shot_row['ind_x']} {shot_row['ind_y']}")
 
                     # Create the player entry
                     # If the player name and nationality already exists in the database, use that id
@@ -239,7 +216,6 @@ def main():
                     if db.cursor.rowcount > 0:
                         # There is already a player
                         result = db.cursor.fetchone()
-                        print(result)
                         # If the player has no sex but we do know it
                         if (result[1] == 'u') and (sex != 'u'):
                             logger.debug(f"There is a player {player_name} but no sex, we now know it.")
@@ -260,41 +236,63 @@ def main():
                     
                     # By here, there should be a player that can be found in the next query
 
-                    # If not
-                    throw_data = (index + 1, 'colour', player_name, player_team, end_id)
+                    # Create a throw entry
+                    throw_data = (index + 1, throw_colour, shot_row['throw_rating'], player_name, player_team, end_id)
                     throw_cmd = """
-                    INSERT OR IGNORE INTO Throw (throw_num, colour, player_id, end_id)
-                                         VALUES (?, ?, (SELECT player_id
-                                                        FROM Player
-                                                        WHERE name=?
-                                                          AND team=?), ?)"""
+                    INSERT OR IGNORE INTO Throw (throw_num, colour, rating, player_id, end_id)
+                                         VALUES (?, ?, ?, (SELECT player_id
+                                                          FROM Player
+                                                          WHERE name=?
+                                                            AND team=?), ?)"""
                     db.execute_command(throw_cmd, throw_data)
+                    throw_colour = 'red' if throw_colour == 'yellow' else 'yellow'
                 
+                # Filter to only the end of interest
                 stones_df_end = stones_df.query('end == @end_num')
-                
                 # For each unique combination of frame_x and frame_y, sorted by y then x
                 frames = sorted(stones_df_end.groupby(['frame_y', 'frame_x']).size().index)
-                print(frames)
-                print(type(frames))
-                print(type(frames[0]))
+                
+                # For most of the mixed doubles there is a valid starting frame, for all mens/womens 
+                #   and the single mixed doubles we have to make something up
+                # If mens or womens, or if tournament == CU_WMDCC2016P
+                # - Then make a position with no stones with frame number 0, then start on frame 1
+                # Else: (All mixed doubles except that one)
+                # - Make frames/positions beginning at zero
+                if (sex == 'm') or (sex == 'f') or (tournament == 'CU_WMDCC2016P'):
+                    # Create a single empty frame to act as a starting position
+                    position_data = (0, end_id)
+                    position_cmd = """
+                    INSERT OR IGNORE INTO Position (frame_num, end_id)
+                                            VALUES (?, ?)"""
+                    db.execute_command(position_cmd, position_data)
+
+                    # Set offset
+                    frame_offset = 1
+                else:
+                    # For the other cases there is a starting position
+                    frame_offset = 0
+
                 for i, (y, x) in enumerate(frames):
                     # Filter to only stones in the frame
                     stones_df_end_frame = stones_df_end.query('(frame_y == @y) & (frame_x == @x)')
 
-                    position_data = (i, end_id)
+                    # Make a position entry
+                    # The frame_offset is used to account for the frame added for mens, womens, and one tournament
+                    position_data = (i + frame_offset, end_id)
                     position_cmd = """
                     INSERT OR IGNORE INTO Position (frame_num, end_id)
                                             VALUES (?, ?)"""
                     db.execute_command(position_cmd, position_data)
                     position_id = db.cursor.lastrowid
 
+                    # Make a stone entry for each stone, referencing the current position
                     stone_cmd = """
                     INSERT OR IGNORE INTO Stone (colour, x, y, position_id)
-                                         VALUES (?, ?, ?, ?)"""
+                                        VALUES (?, ?, ?, ?)"""
                     for _, stone_row in stones_df_end_frame.iterrows():
-                        stone_data = (stone_row['stone_colour'], stone_row['x'], stone_row['y'], position_id)
+                        stone_data = (stone_row['stone_colour'], stone_row['x'] * pixel_to_m, stone_row['y'] * pixel_to_m, position_id)
                         db.execute_command(stone_cmd, stone_data, commit=False)
-                db.commit()
+                    db.commit()
                         
                     
                 
@@ -599,6 +597,7 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
     sheet = ''
     title = ''
     header_parse = []
+    rating_mapping = {'100%': 4, '75%': 3, '50%': 2, '25%': 1, '0%': 0}
 
     # For each page of the document
     for page in root:
@@ -643,7 +642,17 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                                 throw_type = element.text
                             elif (element.text is not None) and (('%' in element.text) or (len(element.text) < 2)):
                                 # If the element contains a '%' or is short like the single number ratings
-                                throw_rating = element.text
+                                # Convert to integer, 4 is best, -1 indicates error reading
+                                # throw_rating = element.text
+                                if '%' in element.text:
+                                    throw_rating = rating_mapping.get(element.text.strip(), -1)
+                                elif (len(element.text) == 1):
+                                    try:
+                                        throw_rating = int(element.text)
+                                    except:
+                                        throw_rating = -1
+                                        
+                                    
                             else:
                                 # Else it is the throw turn direction
                                 throw_turn = element.text

@@ -3,7 +3,7 @@
 CREATE TABLE Event (
     event_id INTEGER NOT NULL PRIMARY KEY,
     name TEXT,
-    abbrev TEXT,
+    abbrev TEXT UNIQUE,
     start_date TEXT,
     end_date TEXT,
     location TEXT
@@ -60,10 +60,10 @@ CREATE TABLE Position (
 CREATE TABLE Stone (
     stone_id INTEGER NOT NULL PRIMARY KEY,
     colour TEXT,
-    x INTEGER,
-    y INTEGER,
+    x REAL,
+    y REAL,
 
-    position_id,
+    position_id INTEGER,
     FOREIGN KEY(position_id) REFERENCES Position(position_id)
 );
 
@@ -71,6 +71,7 @@ CREATE TABLE Throw (
     throw_id INTEGER NOT NULL PRIMARY KEY,
     throw_num INTEGER NOT NULL,
     colour TEXT,
+    rating INTEGER,
     
     player_id INTEGER,
     end_id INTEGER,
