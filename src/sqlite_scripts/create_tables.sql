@@ -71,6 +71,7 @@ CREATE TABLE Throw (
     throw_id INTEGER NOT NULL PRIMARY KEY,
     throw_num INTEGER NOT NULL,
     colour TEXT,
+    type TEXT,
     rating INTEGER,
     
     player_id INTEGER,

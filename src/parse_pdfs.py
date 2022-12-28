@@ -56,7 +56,7 @@ logger.addHandler(s_handler)
 def main():
 
     # --- Create/connect to database ---
-    db = CurlingDB()
+    db = CurlingDB(db_name='world_curling.db')
     
     parsed_tournaments_file = 'parsed_tournaments.txt'
     parsed_tournaments_path = join(base_directory, 'src', parsed_tournaments_file)
@@ -65,7 +65,8 @@ def main():
         logger.info(f"Reseting database and parsed tournament file.")
         db.drop_tables()
         db.create_tables()
-        remove(parsed_tournaments_path)
+        if isfile(parsed_tournaments_path):
+            remove(parsed_tournaments_path)
     
     # Conversion
     pixel_to_m = 0.007370759
@@ -91,7 +92,7 @@ def main():
     else:
         # Make an empty file
         logger.info(f"Parsed file does not exist, creating.")
-        open(parsed_tournaments_path, 'w+')
+        open(parsed_tournaments_path, 'w')
     
     logger.info(f"Looping for tournaments {tournaments}")
 
@@ -99,6 +100,15 @@ def main():
         tournament_name = ''
 
         pdfs = [pdf for pdf in listdir(pdf_dir) if (pdf.startswith(tournament)) and (pdf.endswith('pdf'))]
+
+        # Blacklist some problem documents
+        problem_pdfs = ['CUR_WMDCC2019P-Mixed_Doubles-26~Session_26-SVK-BEL.pdf', 'CUR_WMDCC2017P-Mixed_Doubles-27~Session_27-WAL-BUL.pdf']
+        for i in problem_pdfs:
+            try:
+                pdfs.remove(i)
+            except:
+                pass
+
         logger.info(f"Found {len(pdfs)} pdfs for tournament {tournament}.")
         tournament_info = []
         for pdf in pdfs:
@@ -119,10 +129,19 @@ def main():
             game_type = pdf.split('-')[1]
             
             # -- Convert pdf to xml --
-            pdf = pdf.replace(r"'", r"\'").strip()
-            pdf_to_xml(pdf, pdf_dir=pdf_dir, temp_dir=temp_dir)
+            # This sometimes fails a single time but it loses progress for the entire tournament
+            #   This will just try again a single time if the pdf converion fails
+            try:
+                pdf = pdf.replace(r"'", r"\'").strip()
+                pdf_to_xml(pdf, pdf_dir=pdf_dir, temp_dir=temp_dir)
 
-            xml = [xml for xml in listdir(temp_dir) if xml.endswith('xml')][0]
+                xml = [xml for xml in listdir(temp_dir) if xml.endswith('xml')][0]
+            except:
+                logger.warning(f"Failed to convert pdf to xml, document: {pdf}")
+                pdf_to_xml(pdf, pdf_dir=pdf_dir, temp_dir=temp_dir)
+
+                xml = [xml for xml in listdir(temp_dir) if xml.endswith('xml')][0]
+                
 
             # Remove the erroneous <span> elements
             remove_spans(xml, temp_dir=temp_dir)
@@ -200,6 +219,7 @@ def main():
 
             # Condition the dataframes for the ends, shots, and stone entries
             end_df = match[5]
+            logger.info(f"end_df: {len(end_df)} hammers: {len(match[9])}")
             end_df['hammer'] = match[8]
             end_df['direction'] = match[9]
 
@@ -241,10 +261,11 @@ def main():
                     WHERE name = ?
                       AND team = ?"""
                     db.execute_query(player_query, player_data)
+                    player_response = db.cursor.fetchall()
 
-                    if db.cursor.rowcount > 0:
+                    if len(player_response) > 0:
                         # There is already a player
-                        result = db.cursor.fetchone()
+                        result = player_response[0]
                         # If the player has no sex but we do know it
                         if (result[1] == 'u') and (sex != 'u'):
                             logger.debug(f"There is a player {player_name} but no sex, we now know it.")
@@ -266,13 +287,13 @@ def main():
                     # By here, there should be a player that can be found in the next query
 
                     # Create a throw entry
-                    throw_data = (index + 1, throw_colour, shot_row['throw_rating'], player_name, player_team, end_id)
+                    throw_data = (index + 1, throw_colour, shot_row['throw_type'], shot_row['throw_rating'], player_name, player_team, end_id)
                     throw_cmd = """
-                    INSERT OR IGNORE INTO Throw (throw_num, colour, rating, player_id, end_id)
-                                         VALUES (?, ?, ?, (SELECT player_id
-                                                          FROM Player
-                                                          WHERE name=?
-                                                            AND team=?), ?)"""
+                    INSERT OR IGNORE INTO Throw (throw_num, colour, type, rating, player_id, end_id)
+                                         VALUES (?, ?, ?, ?, (SELECT player_id
+                                                             FROM Player
+                                                             WHERE name=?
+                                                               AND team=?), ?)"""
                     db.execute_command(throw_cmd, throw_data)
                     throw_colour = 'red' if throw_colour == 'yellow' else 'yellow'
                 
@@ -576,7 +597,7 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                 
                 # Less common split case
                 # TODO: Apparently the added number can also take the value of X
-                if (abs(item_top - 225 < 5)) and (len(item.text.strip()) < 3) and (len(item.text.strip()) > 0) and all(x not in item.text for x in ['+', '-', 'X']):
+                if (abs(item_top - 225 < 5)) and (len(item.text.strip()) < 3) and (len(item.text.strip()) > 0) and all(x not in item.text for x in ['+', '-', 'X', '/']):
                     if item.text.strip() == 'X':
                         banner_parse.append((int(item.attrib['top']), int(item.attrib['left']), 0))
                     else:
