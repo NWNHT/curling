@@ -102,7 +102,8 @@ def main():
         pdfs = [pdf for pdf in listdir(pdf_dir) if (pdf.startswith(tournament)) and (pdf.endswith('pdf'))]
 
         # Blacklist some problem documents
-        problem_pdfs = ['CUR_WMDCC2019P-Mixed_Doubles-26~Session_26-SVK-BEL.pdf', 'CUR_WMDCC2017P-Mixed_Doubles-27~Session_27-WAL-BUL.pdf']
+        # The first two are forfeits that aren't properly parsed by this and the last pdf is a corrupted pdf from the source
+        problem_pdfs = ['CUR_WMDCC2019P-Mixed_Doubles-26~Session_26-SVK-BEL.pdf', 'CUR_WMDCC2017P-Mixed_Doubles-27~Session_27-WAL-BUL.pdf', 'CU_WMCC2016P-Mens_Teams-07~Session_7-SCO-CAN.pdf']
         for i in problem_pdfs:
             try:
                 pdfs.remove(i)
