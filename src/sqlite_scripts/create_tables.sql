@@ -62,6 +62,7 @@ CREATE TABLE Stone (
     colour TEXT,
     x REAL,
     y REAL,
+    size INT,
 
     position_id INTEGER,
     FOREIGN KEY(position_id) REFERENCES Position(position_id)

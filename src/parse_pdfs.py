@@ -56,7 +56,7 @@ logger.addHandler(s_handler)
 def main():
 
     # --- Create/connect to database ---
-    db = CurlingDB(db_name='world_curling.db')
+    db = CurlingDB(db_name='stone_position.db')
     
     parsed_tournaments_file = 'parsed_tournaments.txt'
     parsed_tournaments_path = join(base_directory, 'src', parsed_tournaments_file)
@@ -72,10 +72,10 @@ def main():
     pixel_to_m = 0.007370759
 
     # pdf_dir = join(base_directory, 'src', 'sample_pdfs')
-    # pdf_dir = join(base_directory, 'src', 'tourney_sample_pdfs')
+    pdf_dir = join(base_directory, 'src', 'tourney_sample_pdfs')
     # pdf_dir = join(base_directory, 'src', 'small_tourney_sample_pdfs')
     # pdf_dir = join(base_directory, 'src', 'alt_sample_pdfs')
-    pdf_dir = join(base_directory, 'shots')
+    # pdf_dir = join(base_directory, 'shots')
     temp_dir = join(base_directory, 'src', 'temp')
     
 
@@ -180,7 +180,7 @@ def main():
         # doc_info: (start_time, sheet, team_1_score_final, team_2_score_final)
         # page_df: (end_number, team_1_score, team_2_score)
         # shot_df: (end_number, x_ind, y_ind, player, throw_num, throw_type, throw_rating, throw_turn)
-        # stones_df: end, frame_x, frame_y, stone_colour, x, y
+        # stones_df: end, frame_x, frame_y, stone_colour, x, y, stone_size
         # hammers: list of 'red' or 'yellow' representing the hammer for each end in a document
         # dir_of_play_down_list: list of bools representing if the play direction was down
 
@@ -338,10 +338,10 @@ def main():
 
                     # Make a stone entry for each stone, referencing the current position
                     stone_cmd = """
-                    INSERT OR IGNORE INTO Stone (colour, x, y, position_id)
-                                        VALUES (?, ?, ?, ?)"""
+                    INSERT OR IGNORE INTO Stone (colour, x, y, size, position_id)
+                                        VALUES (?, ?, ?, ?, ?)"""
                     for _, stone_row in stones_df_end_frame.iterrows():
-                        stone_data = (stone_row['stone_colour'], stone_row['x'] * pixel_to_m, stone_row['y'] * pixel_to_m, position_id)
+                        stone_data = (stone_row['stone_colour'], stone_row['x'] * pixel_to_m, stone_row['y'] * pixel_to_m, stone_row['stone_size'], position_id)
                         db.execute_command(stone_cmd, stone_data, commit=False)
                     db.commit()
                         
@@ -418,7 +418,7 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
             else:
                 hammer = 'incon'
             
-            # Use the location of the small stones to identify the direciton of play
+            # Use the location of the small stones to identify the direction of play
             try:
                 dir_of_play_down: bool = small_stones[0][0][0][1] < 1925
             except:
@@ -462,7 +462,7 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
             avg_x = round((centroid_x + x + w/2)/2)
             avg_y = round((centroid_y + y + h/2)/2)
         
-            stones.append((stone_colour, end_num, avg_x, avg_y))
+            stones.append((stone_colour, end_num, avg_x, avg_y, len(con_unwrap)))
     
     # -- Find the houses --
     # Find the outlines of the frames, they slightly vary in size
@@ -493,13 +493,13 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
             # For each stone inside the frame
             if (stone[2] > bound[0]) and (stone[2] < (bound[0] + bound[2])) and (stone[3] > (bound[1] + 42)) and (stone[3] < (bound[1] + bound[3] - 42)):
                 if dir_of_play_down:
-                    parsed_stones.append((end_num, ind_x, ind_y, stone[0], (stone[2] - orig_x), -(stone[3] - orig_y)))
+                    parsed_stones.append((end_num, ind_x, ind_y, stone[0], (stone[2] - orig_x), -(stone[3] - orig_y), stone[4]))
                 else:
-                    parsed_stones.append((end_num, ind_x, ind_y, stone[0], -(stone[2] - orig_x), (stone[3] - orig_y)))
+                    parsed_stones.append((end_num, ind_x, ind_y, stone[0], -(stone[2] - orig_x), (stone[3] - orig_y), stone[4]))
         
     # -- Return stone data --
     logger.info(f"Completed stone parsing page {filename.split('/')[-1]}")
-    return pd.DataFrame(parsed_stones, columns=['end', 'frame_x', 'frame_y', 'stone_colour', 'x', 'y']), hammer, dir_of_play_down
+    return pd.DataFrame(parsed_stones, columns=['end', 'frame_x', 'frame_y', 'stone_colour', 'x', 'y', 'stone_size']), hammer, dir_of_play_down
 
     
 def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.DataFrame]:
