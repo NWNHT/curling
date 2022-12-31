@@ -56,7 +56,7 @@ logger.addHandler(s_handler)
 def main():
 
     # --- Create/connect to database ---
-    db = CurlingDB(db_name='stone_position.db')
+    db = CurlingDB(db_name='order_testing.db')
     
     parsed_tournaments_file = 'parsed_tournaments.txt'
     parsed_tournaments_path = join(base_directory, 'src', parsed_tournaments_file)
@@ -161,11 +161,14 @@ def main():
             all_stones = []
             hammers = []
             dir_of_play_list = []
+            num_positions_list = []
             for i, img_filename in enumerate(image_files):
-                stones, hammer, dir_of_play = get_stone_positions(join(temp_dir, img_filename), i + 1)
+                i = int(img_filename.split('_')[1].split('.')[0])
+                stones, hammer, dir_of_play, num_positions = get_stone_positions(join(temp_dir, img_filename), i)
                 all_stones.append(stones)
                 hammers.append(hammer)
                 dir_of_play_list.append(dir_of_play)
+                num_positions_list.append(num_positions)
             
             all_stones = pd.concat(all_stones)
 
@@ -174,15 +177,17 @@ def main():
                 remove(join(temp_dir, temp_file))
             
             print('\n\n')
-            tournament_info.append((tournament, game_type, team1, team2, doc_info, page_df, shot_df, all_stones, hammers, dir_of_play_list))
+            tournament_info.append((tournament, game_type, team1, team2, doc_info, page_df, shot_df, all_stones, hammers, dir_of_play_list, num_positions_list))
         
         # --- Organize Data ---
         # doc_info: (start_time, sheet, team_1_score_final, team_2_score_final)
         # page_df: (end_number, team_1_score, team_2_score)
         # shot_df: (end_number, x_ind, y_ind, player, throw_num, throw_type, throw_rating, throw_turn)
-        # stones_df: end, frame_x, frame_y, stone_colour, x, y, stone_size
+        # stones_df: end, frame_num, frame_x, frame_y, stone_colour, x, y, stone_size
         # hammers: list of 'red' or 'yellow' representing the hammer for each end in a document
         # dir_of_play_down_list: list of bools representing if the play direction was down
+        # num_positions_list: list of ints of the highest index of a frame on the page
+        # houses_list: (end_num, ind_x, ind_y, orig_x, orig_y) - Not present
 
         # Pass the db, tournament info, 
 
@@ -223,6 +228,7 @@ def main():
             logger.info(f"end_df: {len(end_df)} hammers: {len(match[9])}")
             end_df['hammer'] = match[8]
             end_df['direction'] = match[9]
+            end_df['num_positions'] = match[10]
 
             shot_df: pd.DataFrame = match[6]
             shot_df = shot_df.sort_values(by=['ind_y', 'ind_x']).reset_index(drop=True)
@@ -309,41 +315,73 @@ def main():
                 # - Then make a position with no stones with frame number 0, then start on frame 1
                 # Else: (All mixed doubles except that one)
                 # - Make frames/positions beginning at zero
-                if (sex == 'm') or (sex == 'f') or (tournament == 'CU_WMDCC2016P'):
-                    # Create a single empty frame to act as a starting position
-                    position_data = (0, end_id)
-                    position_cmd = """
-                    INSERT OR IGNORE INTO Position (frame_num, end_id)
-                                            VALUES (?, ?)"""
-                    db.execute_command(position_cmd, position_data)
+                # if (sex == 'm') or (sex == 'f') or (tournament == 'CU_WMDCC2016P'):
+                #     # Create a single empty frame to act as a starting position
+                #     position_data = (0, end_id)
+                #     position_cmd = """
+                #     INSERT OR IGNORE INTO Position (frame_num, end_id)
+                #                             VALUES (?, ?)"""
+                #     db.execute_command(position_cmd, position_data)
 
-                    # Set offset
-                    frame_offset = 1
-                else:
-                    # For the other cases there is already a starting position
-                    frame_offset = 0
+                #     # Set offset
+                #     frame_offset = 1
+                # else:
+                #     # For the other cases there is already a starting position
+                #     frame_offset = 0
 
-                for i, (y, x) in enumerate(frames):
+                # For regular mens/womens ends the numbering of the frame is correct, could loop on that, mixed teams is the same
+                # For some mixed doubles, the first frame is a set up, then they skip one, then they have numbering starting from 1
+                # Some mixed doubles(CU_WMDCC2016P) just start off on throw 7 with three stones
+                # Basically want to count on the frames
+                # Could have different modes depending on if there is a frame in the (1, 0) slot
+                
+                # If there is a frame in the (1, 0) slot, then frame = ((x) + 6 * y) + 1
+                # If there is not a frame in (1, 0), then frame = ((x) + 6 * y) - 1
+
+                for i in range(row['num_positions'] + 1):
                     # Filter to only stones in the frame
-                    stones_df_end_frame = stones_df_end.query('(frame_y == @y) & (frame_x == @x)')
+                    stones_df_end_frame = stones_df_end.query('frame_num == @i')
 
                     # Make a position entry
                     # The frame_offset is used to account for the frame added for mens, womens, and one tournament
-                    position_data = (i + frame_offset, end_id)
+                    position_data = (i, end_id)
                     position_cmd = """
                     INSERT OR IGNORE INTO Position (frame_num, end_id)
                                             VALUES (?, ?)"""
                     db.execute_command(position_cmd, position_data)
                     position_id = db.cursor.lastrowid
 
-                    # Make a stone entry for each stone, referencing the current position
-                    stone_cmd = """
-                    INSERT OR IGNORE INTO Stone (colour, x, y, size, position_id)
-                                        VALUES (?, ?, ?, ?, ?)"""
-                    for _, stone_row in stones_df_end_frame.iterrows():
-                        stone_data = (stone_row['stone_colour'], stone_row['x'] * pixel_to_m, stone_row['y'] * pixel_to_m, stone_row['stone_size'], position_id)
-                        db.execute_command(stone_cmd, stone_data, commit=False)
+                    if len(stones_df_end_frame) > 0:
+                        # Make a stone entry for each stone, referencing the current position
+                        stone_cmd = """
+                        INSERT OR IGNORE INTO Stone (colour, x, y, size, position_id)
+                                            VALUES (?, ?, ?, ?, ?)"""
+                        for _, stone_row in stones_df_end_frame.iterrows():
+                            stone_data = (stone_row['stone_colour'], stone_row['x'] * pixel_to_m, stone_row['y'] * pixel_to_m, stone_row['stone_size'], position_id)
+                            db.execute_command(stone_cmd, stone_data, commit=False)
                     db.commit()
+
+                # for i, (y, x) in enumerate(frames):
+                #     # Filter to only stones in the frame
+                #     stones_df_end_frame = stones_df_end.query('(frame_y == @y) & (frame_x == @x)')
+
+                #     # Make a position entry
+                #     # The frame_offset is used to account for the frame added for mens, womens, and one tournament
+                #     position_data = (i + frame_offset, end_id)
+                #     position_cmd = """
+                #     INSERT OR IGNORE INTO Position (frame_num, end_id)
+                #                             VALUES (?, ?)"""
+                #     db.execute_command(position_cmd, position_data)
+                #     position_id = db.cursor.lastrowid
+
+                #     # Make a stone entry for each stone, referencing the current position
+                #     stone_cmd = """
+                #     INSERT OR IGNORE INTO Stone (colour, x, y, size, position_id)
+                #                         VALUES (?, ?, ?, ?, ?)"""
+                #     for _, stone_row in stones_df_end_frame.iterrows():
+                #         stone_data = (stone_row['stone_colour'], stone_row['x'] * pixel_to_m, stone_row['y'] * pixel_to_m, stone_row['stone_size'], position_id)
+                #         db.execute_command(stone_cmd, stone_data, commit=False)
+                #     db.commit()
                         
         # Note that the tournament has been parsed
         with open(parsed_tournaments_path, 'a') as fh:
@@ -468,8 +506,14 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
     # Find the outlines of the frames, they slightly vary in size
     contours, _ = cv2.findContours(black_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Filter to only the frame bouning boxes
+    # Filter to only the frame bounding boxes
     bounding = [bound for bound in [cv2.boundingRect(con) for con in contours] if (bound[2] > 500) and (bound[3] > 900)]
+
+    # Here I could number each of the frames for the stones
+
+    # If there is no (1, 0), then (0, 0) is 0, (2, 0) is 1, ...
+    # If there is a (1, 0), then (0, 0) is 1 and the frame insertion part of the main loop still applies
+
     # Construct a list of the houses/frames, noting the index of the frame and location of the house
     houses = []
     for bound in bounding:
@@ -481,25 +525,50 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
         
         # Find the location index
         ind_x = (bound[0] - 288) // 730
-        ind_y = (bound[1] - 1355) // 1438
+        # ind_y = (bound[1] - 1355) // 1438
+        ind_y = (bound[1] - 1330) // 1410
 
+        # logger.info(f"x: {ind_x}, y: {ind_y}")
         houses.append((end_num, ind_x, ind_y, orig_x, orig_y))
+    
+    # This is a test if there is a (1, 0) in the houses
+    start_normal: bool = True if any(((house[1] == 1) and (house[2] == 0)) for house in houses) else False
+
+    def frame_num_calc(x, y, normal_count: bool) -> int:
+        """Return the frame number"""
+        if normal_count:
+            return int(x + (6 * y) + 1)
+        else:
+            return int(x + (6 * y) - 1)
+
+    # Here we take the tuples in, and just add a field to them
+    houses_new = []
+    for house in houses:
+        calc_frame_num = frame_num_calc(house[1], house[2], start_normal)
+        if calc_frame_num == -1: # Guard for the weird counting, give frame num of 0 instead of -1
+            houses_new.append((*house, 0))
+        else:
+            houses_new.append((*house, calc_frame_num))
+    houses = houses_new
+    # Highest index of position on page
+    num_positions = max([house[5] for house in houses])
+    logger.info(f"Max index of positions: {num_positions}, normal? {start_normal}")
     
     # -- Find positions of stones in houses --
     # For each frame, find position of each stone relative to centre of house
     parsed_stones = []
-    for bound, (_, ind_x, ind_y, orig_x, orig_y) in zip(bounding, houses):
+    for bound, (_, ind_x, ind_y, orig_x, orig_y, calc_frame_num) in zip(bounding, houses):
         for stone in stones:
             # For each stone inside the frame
             if (stone[2] > bound[0]) and (stone[2] < (bound[0] + bound[2])) and (stone[3] > (bound[1] + 42)) and (stone[3] < (bound[1] + bound[3] - 42)):
                 if dir_of_play_down:
-                    parsed_stones.append((end_num, ind_x, ind_y, stone[0], (stone[2] - orig_x), -(stone[3] - orig_y), stone[4]))
+                    parsed_stones.append((end_num, calc_frame_num, ind_x, ind_y, stone[0], (stone[2] - orig_x), -(stone[3] - orig_y), stone[4]))
                 else:
-                    parsed_stones.append((end_num, ind_x, ind_y, stone[0], -(stone[2] - orig_x), (stone[3] - orig_y), stone[4]))
+                    parsed_stones.append((end_num, calc_frame_num, ind_x, ind_y, stone[0], -(stone[2] - orig_x), (stone[3] - orig_y), stone[4]))
         
     # -- Return stone data --
     logger.info(f"Completed stone parsing page {filename.split('/')[-1]}")
-    return pd.DataFrame(parsed_stones, columns=['end', 'frame_x', 'frame_y', 'stone_colour', 'x', 'y', 'stone_size']), hammer, dir_of_play_down
+    return pd.DataFrame(parsed_stones, columns=['end', 'frame_num', 'frame_x', 'frame_y', 'stone_colour', 'x', 'y', 'stone_size']), hammer, dir_of_play_down, num_positions
 
     
 def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.DataFrame]:
