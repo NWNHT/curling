@@ -120,7 +120,7 @@ def main():
             # Convert the pdf to images for stone parsing - complete
             # Parse the xml for text - complete
             # Parse the images for the stone locations - complete
-            # Delete the xml and images - complete
+            # Delete the xml file and images - complete
             # Enter into database - complete
             
             logger.info(f"Beginning pdf: {pdf}")
@@ -130,8 +130,8 @@ def main():
             game_type = pdf.split('-')[1]
             
             # -- Convert pdf to xml --
-            # This sometimes fails a single time but it loses progress for the entire tournament
-            #   This will just try again a single time if the pdf converion fails
+            # This sometimes fails a single time but it would lose progress for the entire tournament
+            #   This will just try again a single time if the pdf converion fails, after a few tests this is quite effective
             try:
                 pdf = pdf.replace(r"'", r"\'").strip()
                 pdf_to_xml(pdf, pdf_dir=pdf_dir, temp_dir=temp_dir)
@@ -143,7 +143,6 @@ def main():
 
                 xml = [xml for xml in listdir(temp_dir) if xml.endswith('xml')][0]
                 
-
             # Remove the erroneous <span> elements
             remove_spans(xml, temp_dir=temp_dir)
 
@@ -177,9 +176,14 @@ def main():
                 remove(join(temp_dir, temp_file))
             
             print('\n\n')
+            # Append to the mega list that holds the information for each match in a tournament.
+            # This could be cleaned up with a dataclass but I enjoy the simplicity of a list of tuples
             tournament_info.append((tournament, game_type, team1, team2, doc_info, page_df, shot_df, all_stones, hammers, dir_of_play_list, num_positions_list))
         
-        # --- Organize Data ---
+        # --- Tournament_info Data ---
+        # tournament: abbreviation of the tournament
+        # game_type: the type of game: Men's Teams, Mixed Doubles, ...
+        # team1/team2: the team names of the two teams
         # doc_info: (start_time, sheet, team_1_score_final, team_2_score_final)
         # page_df: (end_number, team_1_score, team_2_score)
         # shot_df: (end_number, x_ind, y_ind, player, throw_num, throw_type, throw_rating, throw_turn)
@@ -187,16 +191,14 @@ def main():
         # hammers: list of 'red' or 'yellow' representing the hammer for each end in a document
         # dir_of_play_down_list: list of bools representing if the play direction was down
         # num_positions_list: list of ints of the highest index of a frame on the page
-        # houses_list: (end_num, ind_x, ind_y, orig_x, orig_y) - Not present
 
         # Pass the db, tournament info, 
-
         tournament_dates = [x.date() for x in [pdf[4][0] for pdf in tournament_info] if (x is not None) and (not isinstance(x, str))]
         tournament_start_date = min(tournament_dates)
         tournament_end_date = max(tournament_dates)
         event_data = (tournament_name, tournament, tournament_start_date, tournament_end_date, '')
 
-        # Entry for the tournament/event
+        # Record for the tournament/event
         tournament_cmd = """
         INSERT OR IGNORE INTO Event (name, abbrev, start_date, end_date, location)
                              VALUES (?, ?, ?, ?, ?)"""
@@ -204,8 +206,9 @@ def main():
         tournament_id = db.cursor.lastrowid
         logger.debug(f"The tourn_id is: {tournament_id}")
 
+        # --- For each match in the tournament ---
         for match in tournament_info:
-            # Entry for the match
+            # Record for the match
             # Tournament abbrev, start_time, game type, sheet, team1, team1score, team2, team2score
             match_data = (match[4][0], match[1], match[4][1], match[2], int(match[4][2]), match[3], int(match[4][3]), tournament_id)
             match_cmd = """
@@ -221,7 +224,7 @@ def main():
             elif match[1] == 'Womens_Teams':
                 sex = 'f'
             else:
-                sex = 'u' # Unknown
+                sex = 'u' # Unknown sex
 
             # Condition the dataframes for the ends, shots, and stone entries
             end_df = match[5]
@@ -235,9 +238,9 @@ def main():
 
             stones_df = match[7]
 
-            # For each end from the match
+            # --- For each end in the match ---
             for _, row in end_df.iterrows():
-                # Make the end entry
+                # Make the end record
                 end_num = row['end_number']
                 end_data = (end_num, row['hammer'], 'down' if row['direction'] else 'up', row['team_1_score'], row['team_2_score'], match_id)
                 end_cmd = """
@@ -247,7 +250,7 @@ def main():
                 end_id = db.cursor.lastrowid
                 logger.debug(f"\t\tThe end_id is: {end_id}")
 
-                # Entries for all of the throws, also handles the players
+                # --- For each throw in the end ---
                 throw_colour = 'red' if row['hammer'] == 'yellow' else 'yellow'
                 for index, shot_row in (shot_df.query('end_number == @end_num')
                                                .sort_values(by=['ind_y', 'ind_x'])
@@ -255,11 +258,12 @@ def main():
                                                .iterrows()):
                     logger.debug(f"\t\t\tFrame: {shot_row['ind_x']} {shot_row['ind_y']}")
 
-                    # Create the player entry
+                    # --- Create the player record ---
                     # If the player name and nationality already exists in the database, use that id
-                    # - If sex in m/f then check if the player has a sex in the database, if not then set it
-                    # If no entry then make an entry, if sex in m/f then insert that
+                    # - If the sex is unknown in the database but known in this data then set it
+                    # If no record then make an record, if sex is known then include it
 
+                    # Query for the player_id
                     player_team, player_name = [x.strip() for x in shot_row['player'].split(':')]
                     player_data = (player_name, player_team)
                     player_query = """
@@ -273,7 +277,7 @@ def main():
                     if len(player_response) > 0:
                         # There is already a player
                         result = player_response[0]
-                        # If the player has no sex but we do know it
+                        # If the player has no sex but we do know it, then update the record
                         if (result[1] == 'u') and (sex != 'u'):
                             logger.debug(f"There is a player {player_name} but no sex, we now know it.")
                             player_update_cmd = """
@@ -284,16 +288,15 @@ def main():
                         else:
                             logger.debug(f"There is a player {player_name} but no sex, we still don't know it.")
                     else:
-                        # There is no player, add
+                        # There is no player, create record
                         logger.debug(f"There is no player {player_name}, we know the sex.")
                         player_add_cmd = """
                         INSERT OR IGNORE INTO Player (name, sex, team)
                                             VALUES (?, ?, ?)"""
                         db.execute_command(player_add_cmd, (player_name, sex, player_team))
                     
-                    # By here, there should be a player that can be found in the next query
 
-                    # Create a throw entry
+                    # --- Create a throw record ---
                     throw_data = (index + 1, throw_colour, shot_row['throw_type'], shot_row['throw_rating'], player_name, player_team, end_id)
                     throw_cmd = """
                     INSERT OR IGNORE INTO Throw (throw_num, colour, type, rating, player_id, end_id)
@@ -306,44 +309,13 @@ def main():
                 
                 # Filter to only the end of interest
                 stones_df_end = stones_df.query('end == @end_num')
-                # For each unique combination of frame_x and frame_y, sorted by y then x
-                frames = sorted(stones_df_end.groupby(['frame_y', 'frame_x']).size().index)
-                
-                # For most of the mixed doubles there is a valid starting frame, for all mens/womens 
-                #   and the single mixed doubles we have to make something up
-                # If mens or womens, or if tournament == CU_WMDCC2016P
-                # - Then make a position with no stones with frame number 0, then start on frame 1
-                # Else: (All mixed doubles except that one)
-                # - Make frames/positions beginning at zero
-                # if (sex == 'm') or (sex == 'f') or (tournament == 'CU_WMDCC2016P'):
-                #     # Create a single empty frame to act as a starting position
-                #     position_data = (0, end_id)
-                #     position_cmd = """
-                #     INSERT OR IGNORE INTO Position (frame_num, end_id)
-                #                             VALUES (?, ?)"""
-                #     db.execute_command(position_cmd, position_data)
 
-                #     # Set offset
-                #     frame_offset = 1
-                # else:
-                #     # For the other cases there is already a starting position
-                #     frame_offset = 0
-
-                # For regular mens/womens ends the numbering of the frame is correct, could loop on that, mixed teams is the same
-                # For some mixed doubles, the first frame is a set up, then they skip one, then they have numbering starting from 1
-                # Some mixed doubles(CU_WMDCC2016P) just start off on throw 7 with three stones
-                # Basically want to count on the frames
-                # Could have different modes depending on if there is a frame in the (1, 0) slot
-                
-                # If there is a frame in the (1, 0) slot, then frame = ((x) + 6 * y) + 1
-                # If there is not a frame in (1, 0), then frame = ((x) + 6 * y) - 1
-
+                # --- For each frame in an end ---
                 for i in range(row['num_positions'] + 1):
                     # Filter to only stones in the frame
                     stones_df_end_frame = stones_df_end.query('frame_num == @i')
 
-                    # Make a position entry
-                    # The frame_offset is used to account for the frame added for mens, womens, and one tournament
+                    # --- Make a position record ---
                     position_data = (i, end_id)
                     position_cmd = """
                     INSERT OR IGNORE INTO Position (frame_num, end_id)
@@ -352,42 +324,19 @@ def main():
                     position_id = db.cursor.lastrowid
 
                     if len(stones_df_end_frame) > 0:
-                        # Make a stone entry for each stone, referencing the current position
+                        # --- Make a stone record ---
                         stone_cmd = """
                         INSERT OR IGNORE INTO Stone (colour, x, y, size, position_id)
                                             VALUES (?, ?, ?, ?, ?)"""
                         for _, stone_row in stones_df_end_frame.iterrows():
                             stone_data = (stone_row['stone_colour'], stone_row['x'] * pixel_to_m, stone_row['y'] * pixel_to_m, stone_row['stone_size'], position_id)
                             db.execute_command(stone_cmd, stone_data, commit=False)
+
                     db.commit()
-
-                # for i, (y, x) in enumerate(frames):
-                #     # Filter to only stones in the frame
-                #     stones_df_end_frame = stones_df_end.query('(frame_y == @y) & (frame_x == @x)')
-
-                #     # Make a position entry
-                #     # The frame_offset is used to account for the frame added for mens, womens, and one tournament
-                #     position_data = (i + frame_offset, end_id)
-                #     position_cmd = """
-                #     INSERT OR IGNORE INTO Position (frame_num, end_id)
-                #                             VALUES (?, ?)"""
-                #     db.execute_command(position_cmd, position_data)
-                #     position_id = db.cursor.lastrowid
-
-                #     # Make a stone entry for each stone, referencing the current position
-                #     stone_cmd = """
-                #     INSERT OR IGNORE INTO Stone (colour, x, y, size, position_id)
-                #                         VALUES (?, ?, ?, ?, ?)"""
-                #     for _, stone_row in stones_df_end_frame.iterrows():
-                #         stone_data = (stone_row['stone_colour'], stone_row['x'] * pixel_to_m, stone_row['y'] * pixel_to_m, stone_row['stone_size'], position_id)
-                #         db.execute_command(stone_cmd, stone_data, commit=False)
-                #     db.commit()
                         
         # Note that the tournament has been parsed
         with open(parsed_tournaments_path, 'a') as fh:
             fh.write(tournament + '\n')
-                                
-                
 
                 
 def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str, bool]:
@@ -404,15 +353,22 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
 
     # The actual stone detection is not 100%, there are some complicated things going on here.
     # Weaknesses include finding stones that are slightly overlapping with locations of previous stones, many of these are ignored
-    # - This can be adjusted by the continuation thresholds
+    # - This can be adjusted by the contour length and bounding box thresholds
+    # - More lenient thresholds will increase the chance of the shadows of stones being recognized as stones
+    # - Original parameters are 40, 75, 25, 50
+    min_contour_length = 40
+    max_contour_length = 75
+    min_bounding_box = 25
+    max_bounding_box = 50
 
-    lower_red = np.array([0, 250, 250])
+    # Mask colours
+    lower_red = np.array([0, 250, 250]) # For stones
     upper_red = np.array([0, 255, 255])
-    lower_yellow = np.array([28, 200, 200])
+    lower_yellow = np.array([28, 200, 200]) # For stones
     upper_yellow = np.array([32, 255, 255])
-    lower_blue = np.array([120, 225, 225])
+    lower_blue = np.array([120, 225, 225]) # For the blue cross in yellow stones
     upper_blue = np.array([130, 255, 255])
-    lower_black = np.array([0, 0, 0])
+    lower_black = np.array([0, 0, 0]) # For the frames
     upper_black = np.array([1, 1, 1])
 
     # Convert the image into a cv2 BGR object
@@ -421,25 +377,27 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
 
     # Create the masks
     red_mask = cv2.inRange(hsv, lower_red, upper_red)
+
     yellow_mask = cv2.inRange(hsv, lower_yellow, upper_yellow)
     blue_mask = cv2.inRange(hsv, lower_blue, upper_blue)
     yellow_mask = cv2.bitwise_or(yellow_mask, blue_mask)
+
     black_mask = cv2.inRange(hsv, lower_black, upper_black)
 
+    # --- For red and yellow masks, find all of the stones ---
     stones = []
     hammer = ''
-
     for stone_colour, colour_mask in {'red': red_mask, 'yellow': yellow_mask}.items():
-        # Find contours and bounding boxes
+        # Find contours and bounding boxes of stones
         contours, _ = cv2.findContours(colour_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         con_bound = [cv2.boundingRect(con) for con in contours]
 
         # -- Find the absolute locations of all of the stones --
 
-        # Check for the hammer, checks the first cell
+        # Determine the hammer and direction of play, checks the first cell
         if stone_colour == 'red':
 
-            # First frame
+            # Find the small stones in the first frame(Considering an 8x scale)
             small_stones = [con for con in contours if (len(con) < 40) 
                                                    and (len(con) > 15)
                                                    and (con[0][0][1] > 1200)
@@ -454,9 +412,10 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
             elif any(stone_num == x for x in [4, 7]):
                 hammer = 'yellow'
             else:
-                hammer = 'incon'
+                hammer = 'incon' # Inconclusive result
             
             # Use the location of the small stones to identify the direction of play
+            # A failure of this would be quite catastrohpic and warrant an exit
             try:
                 dir_of_play_down: bool = small_stones[0][0][0][1] < 1925
             except:
@@ -471,14 +430,15 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
         valid_con = []
         for i, con in enumerate(contours):
             # If bounding box is too small or large, skip, if the length of the contour is too small or large, skip
-            if min(con_bound[i][2:]) < 25: continue
-            elif max(con_bound[i][2:]) > 50: continue
-            elif (len(con) < 40) or (len(con) > 75): continue
+            if min(con_bound[i][2:]) < min_bounding_box: continue
+            elif max(con_bound[i][2:]) > max_bounding_box: continue
+            elif (len(con) < min_contour_length) or (len(con) > max_contour_length): continue
 
             # If the centre of the contour is within the bounding box of another, skip
             # This is to avoid the outlines of previous stones
+            # There has to be a better way than this, this is O(n^2) on all the colour of stones in the end
             x, y, w, h = con_bound[i]
-            x, y = (x + w/2, y + h/2)
+            x, y = (x + w/2, y + h/2) # centre point of bounding box
             count = 0
             for x_o, y_o, w, h in con_bound:
                 if (x > x_o) and (x < x_o + w) and (y > y_o) and (y < y_o + h):
@@ -489,11 +449,11 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
                 valid_con.append(con)
             
         # Find the centres of the rocks
-        # This is an averaging of the bounding box and mean
+        # This is an averaging of the bounding box and mean of contour points
         for con in valid_con:
             con_unwrap = [x[0] for x in con]
             centroid_x = round(sum([x[0] for x in con_unwrap])/len(con_unwrap))
-            centroid_y = round(sum([x[1] for x in con_unwrap])/len(con_unwrap)) 
+            centroid_y = round(sum([x[1] for x in con_unwrap])/len(con_unwrap))
 
             x, y, w, h = cv2.boundingRect(con)
 
@@ -502,17 +462,19 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
         
             stones.append((stone_colour, end_num, avg_x, avg_y, len(con_unwrap)))
     
-    # -- Find the houses --
+    # --- Find the houses ---
+    # Here begins the lunacy, there are a few different match types and formats which greatly complicate the
+    #   parsing.  The technique I have settled on(for now) is finding all of the frames on the page, checking
+    #   if a frame exists in the second position, then beginning frame counting based on that test.  If there
+    #   is a frame in that position then the counting of frames begins with 1 in the top left, otherwise,
+    #   the counting begins with 1 in the 'third' frame position.  This accounts for all formats.  Then an
+    #   empty frame is made for matches that do not have a 'zero frame'.
+
     # Find the outlines of the frames, they slightly vary in size
     contours, _ = cv2.findContours(black_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # Filter to only the frame bounding boxes
+    # Filter to only the frame bounding boxes based on size
     bounding = [bound for bound in [cv2.boundingRect(con) for con in contours] if (bound[2] > 500) and (bound[3] > 900)]
-
-    # Here I could number each of the frames for the stones
-
-    # If there is no (1, 0), then (0, 0) is 0, (2, 0) is 1, ...
-    # If there is a (1, 0), then (0, 0) is 1 and the frame insertion part of the main loop still applies
 
     # Construct a list of the houses/frames, noting the index of the frame and location of the house
     houses = []
@@ -525,31 +487,29 @@ def get_stone_positions(filename: str, end_num: int) -> tuple[pd.DataFrame, str,
         
         # Find the location index
         ind_x = (bound[0] - 288) // 730
-        # ind_y = (bound[1] - 1355) // 1438
         ind_y = (bound[1] - 1330) // 1410
 
-        # logger.info(f"x: {ind_x}, y: {ind_y}")
         houses.append((end_num, ind_x, ind_y, orig_x, orig_y))
     
-    # This is a test if there is a (1, 0) in the houses
+    # This is a test if there is a (1, 0) in the house list
     start_normal: bool = True if any(((house[1] == 1) and (house[2] == 0)) for house in houses) else False
 
     def frame_num_calc(x, y, normal_count: bool) -> int:
-        """Return the frame number"""
+        """Calculate the frame number depending on the format of the pdf"""
         if normal_count:
             return int(x + (6 * y) + 1)
         else:
             return int(x + (6 * y) - 1)
 
-    # Here we take the tuples in, and just add a field to them
-    houses_new = []
+    # Here we take the tuples in, and just add the calculated frame number to them
+    houses_temp = []
     for house in houses:
         calc_frame_num = frame_num_calc(house[1], house[2], start_normal)
         if calc_frame_num == -1: # Guard for the weird counting, give frame num of 0 instead of -1
-            houses_new.append((*house, 0))
+            houses_temp.append((*house, 0))
         else:
-            houses_new.append((*house, calc_frame_num))
-    houses = houses_new
+            houses_temp.append((*house, calc_frame_num))
+    houses = houses_temp
     # Highest index of position on page
     num_positions = max([house[5] for house in houses])
     logger.info(f"Max index of positions: {num_positions}, normal? {start_normal}")
@@ -596,20 +556,20 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
     header_parse = []
     rating_mapping = {'100%': 4, '75%': 3, '50%': 2, '25%': 1, '0%': 0}
 
-    # For each page of the document
+    # --- For each page of the document ---
     for page in root:
         page_num = int(page.attrib['number'])
         banner_parse = []
 
-        # For each text element of the page
+        # --- For each text element of the page ---
         for item in page.findall('text'):
 
-            # Check if the item is a team: player tag
+            # --- For each 'Team : Player' element ---
             if (item.text is not None):
                 item_top = int(item.attrib['top'])
                 item_left = int(item.attrib['left'])
                 
-                # -- Parse for Shots --
+                # --- Parse for Shots ---
                 # TODO: There is also a 'Shoot-out' option which is just a closest to the centre
                 if ('Prepositioned Stones' in item.text):
                     pass
@@ -647,17 +607,16 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                                         throw_rating = int(element.text)
                                     except:
                                         throw_rating = -1
-                                        
-                                    
+                            
                             else:
                                 # Else it is the throw turn direction
                                 throw_turn = element.text
                                 
                     shot_info[-1].extend([player, throw_num, throw_type, throw_rating, throw_turn])
                 
-                # -- Parse for End Score --
+                # --- Parse for End Score ---
                 # This is for the more common string case
-                # TODO: Apparently the resulting number can be W/L, should just take score of previous end
+                # TODO: The resulting number can be W/L, should just take score of previous end
                 if ('=' in item.text) and (abs(item_top - 225) < 5):
                     score_tuple = (int(item.attrib['top']), int(item.attrib['left']), item.text.split()[-1].strip(' ='))
                     # If either of the parsed scores are W/L then it will go with the 99-99 option which indicates error parsing
@@ -666,14 +625,14 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                         banner_parse.append((score_tuple[0], score_tuple[1], int(score_tuple[2])))
                 
                 # Less common split case
-                # TODO: Apparently the added number can also take the value of X
+                # TODO: The added number can also take the value of X
                 if (abs(item_top - 225 < 5)) and (len(item.text.strip()) < 3) and (len(item.text.strip()) > 0) and all(x not in item.text for x in ['+', '-', 'X', '/']):
                     if item.text.strip() == 'X':
                         banner_parse.append((int(item.attrib['top']), int(item.attrib['left']), 0))
                     else:
                         banner_parse.append((int(item.attrib['top']), int(item.attrib['left']), int(item.text.strip())))
                 
-                # -- Parse for Title Info --
+                # --- Parse for Title Info ---
                 # Only check first page
                 if int(page.attrib['number']) == 1:
                     # Check for the start time
@@ -684,6 +643,7 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                     # Check for the date
                     if (len(item.text.strip().split()) == 4) and (item_top > date_box['top']) and (item_top < date_box['bottom']) and (item_left < date_box['right']):
                         date = dateparser.parse(item.text.strip())
+
                     # Check for a sheet label
                     if (item_top < 200) and ('Sheet' in item.text):
                         sheet = sheet_pattern.findall(item.text)[0]
@@ -693,8 +653,8 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
                         header_parse.append(item.text)
                 
                         
-        # -- Page Parsing --
-        # Each page will have either 
+        # --- Page Parsing ---
+        # Each page will have two scores, or four scores, or some kind of parsing error
         if len(banner_parse) == 2:
             team_1_score = banner_parse[0][2]
             team_2_score = banner_parse[1][2]
@@ -705,14 +665,14 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
             team_1_score = 99
             team_2_score = 99
             logger.warning(f"Found invalid set of score elements")
-            
+
         end_number = page_num
 
         logger.info(f"Completed text parsing of page {filename.split('/')[-1]}")
         page_info.append((end_number, team_1_score, team_2_score))
     
 
-    # -- Document Parsing --
+    # --- Document Parsing ---
     header_pattern = re.compile(r'.* [0-9]{4}')
     for i in sorted(header_parse, key=len):
         if header_pattern.findall(i):
@@ -720,6 +680,7 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
         elif i == 'Curling':
             title 
     
+    # Create dataframes from lists of data
     page_df = pd.DataFrame(page_info, columns=['end_number', 'team_1_score', 'team_2_score'])
     shot_df = pd.DataFrame(shot_info, columns=['end_number', 'ind_x', 'ind_y', 'player', 'throw_num', 'throw_type', 'throw_rating', 'throw_turn'])
 
@@ -727,6 +688,7 @@ def parse_text(filename, temp_dir: str) -> tuple[str, tuple, pd.DataFrame, pd.Da
     team_1_final_score = page_df['team_1_score'].max()
     team_2_final_score = page_df['team_2_score'].max()
 
+    # Do some checks and create the start time of the match
     if isinstance(date, datetime.datetime) and isinstance(start_time, datetime.timedelta):
         start_time = date + start_time
     elif isinstance(date):
