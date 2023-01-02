@@ -56,11 +56,11 @@ logger.addHandler(s_handler)
 def main():
 
     # --- Create/connect to database ---
-    db = CurlingDB(db_name='order_testing.db')
+    db = CurlingDB(db_name='world_curling_sp.db')
     
     parsed_tournaments_file = 'parsed_tournaments.txt'
     parsed_tournaments_path = join(base_directory, 'src', parsed_tournaments_file)
-    reset = True # If true this will reset the database and delete the parse_tournament document
+    reset = False # If true this will reset the database and delete the parse_tournament document
     if reset:
         logger.info(f"Reseting database and parsed tournament file.")
         db.drop_tables()
@@ -72,10 +72,10 @@ def main():
     pixel_to_m = 0.007370759
 
     # pdf_dir = join(base_directory, 'src', 'sample_pdfs')
-    pdf_dir = join(base_directory, 'src', 'tourney_sample_pdfs')
+    # pdf_dir = join(base_directory, 'src', 'tourney_sample_pdfs')
     # pdf_dir = join(base_directory, 'src', 'small_tourney_sample_pdfs')
     # pdf_dir = join(base_directory, 'src', 'alt_sample_pdfs')
-    # pdf_dir = join(base_directory, 'shots')
+    pdf_dir = join(base_directory, 'shots')
     temp_dir = join(base_directory, 'src', 'temp')
     
 
