@@ -24,7 +24,7 @@ def create_shots_file():
     data_pattern = re.compile(r'.*HREF="(/data/.*)".*')
     pot_tournies = data_pattern.findall(base)
 
-    # Loop through all of the sessions for all 'teams' for all tournaments and 
+    # Loop through all of the sessions for all 'teams' for lall tournaments and 
     #   find files with names containing 'Shot_by_Shot', save to list all_shots
     all_shots = []
     for pot_tourney in tqdm(pot_tournies):
@@ -105,4 +105,8 @@ def download_shots():
         
 
 if __name__ == '__main__':
+    # Create list of shot_by_shot files to download
+    create_shots_file()
+
+    # Download all of the files in the list
     download_shots()

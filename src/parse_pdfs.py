@@ -71,13 +71,9 @@ def main():
     # Conversion
     pixel_to_m = 0.007370759
 
-    # pdf_dir = join(base_directory, 'src', 'sample_pdfs')
-    # pdf_dir = join(base_directory, 'src', 'tourney_sample_pdfs')
-    # pdf_dir = join(base_directory, 'src', 'small_tourney_sample_pdfs')
-    # pdf_dir = join(base_directory, 'src', 'alt_sample_pdfs')
+    # Set up the directory paths
     pdf_dir = join(base_directory, 'shots')
     temp_dir = join(base_directory, 'src', 'temp')
-    
 
     # Find all tournaments in directory
     tournaments = {x.split('-')[0]: x for x in listdir(pdf_dir) if x.endswith('pdf')}.keys()
