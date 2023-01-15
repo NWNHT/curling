@@ -81,7 +81,7 @@ class DBConn:
 		self.cursor.executescript(commands)
 		self.commit()
 
-	def execute_command(self, command: str, arguments: Optional[tuple], commit: bool=True):
+	def execute_command(self, command: str, arguments: Optional[tuple]=None, commit: bool=True):
 		"""
 		Execute arbitrary command
 		"""
