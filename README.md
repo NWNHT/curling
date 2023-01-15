@@ -27,7 +27,7 @@ The document text contains match information that is listed in the header of eac
 
 The stone positions within each 'frame' were parsed using some of the core functionality of [OpenCV](https://opencv.org) to create masks for the stone colours and find all of the contours.  The contours found were then filtered to find the contours of interest and their locations saved relative to the centre of their respective [house](https://www.rookieroad.com/curling/the-sheet/house/).  
 
-![Frame/Position](docs/images/example_house.png)
+<img src="docs/images/example_house.png" alt="drawing" style="width:300px;"/>
 
 ## 3. Create Database
 
